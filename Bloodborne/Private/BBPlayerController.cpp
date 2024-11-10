@@ -24,6 +24,8 @@ void ABBPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	BCharacter = Cast<ABBCharacter>(GetCharacter());
+
 	if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		//SubSystem->ClearAllMappings();
@@ -40,7 +42,6 @@ void ABBPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ABBPlayerController::StartJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopJump);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ABBPlayerController::Attack);
 	}
 }
 

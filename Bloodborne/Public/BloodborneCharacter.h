@@ -40,7 +40,6 @@ class ABloodborneCharacter : public ACharacter
 public:
 	ABloodborneCharacter();
 	
-
 protected:
 
 	/** Called for movement input */

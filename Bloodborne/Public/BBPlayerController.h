@@ -4,9 +4,9 @@
 
 #include "Bloodborne.h"
 #include "GameFramework/PlayerController.h"
-#include "BBPlayerController.generated.h"
 #include "InputActionValue.h"
 #include "BBCharacter.h"
+#include "BBPlayerController.generated.h"
 
 /**
  * 
@@ -44,9 +44,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	TObjectPtr<class UInputAction> JumpAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
-	TObjectPtr<class UInputAction> AttackAction;
 
 	UPROPERTY()
 	TObjectPtr<ABBCharacter> BCharacter;

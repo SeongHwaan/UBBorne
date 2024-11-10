@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Bloodborne.h"
 #include "GameFramework/Character.h"
 #include "BBCharacter.generated.h"
 
@@ -41,11 +41,4 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> Camera;
-
-	UPROPERTY()
-	TObjectPtr<class UTutorialAnimInstance> BAnim;
-
-	UPROPERTY()
-	TObjectPtr<class ATutorialPlayerController> BPlayerController;
-
 };
