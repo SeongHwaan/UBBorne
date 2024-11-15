@@ -47,5 +47,4 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<ABBCharacter> BCharacter;
-
 };

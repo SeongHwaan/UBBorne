@@ -34,6 +34,25 @@ public:
 	void ChangeCameraMode();
 	void Attack();
 
+	bool GetHasMovementInput();
+	float GetInputChangeRate();
+	float GetInputIntensity();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool HasMovementInput = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float InputChangeRate = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float InputIntensity = 0.0f; 
+
+
+private:
+	float PreviousInputIntensity = 0.0f;
+	float ChangeCheckInterval = 0.1f;
+	float LastChangeCheckTime = 0.0f;
+
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
