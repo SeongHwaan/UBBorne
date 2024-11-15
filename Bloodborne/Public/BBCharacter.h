@@ -26,17 +26,23 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USpringArmComponent> SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCameraComponent> Camera;
+
 public:
 	void Move(const FVector2D& Vector);
 	void Look(const FVector2D& Vector);
 	void CustomJump();
 	void CustomStopJump();
-	void ChangeCameraMode();
 	void Attack();
 
-	bool GetHasMovementInput();
-	float GetInputChangeRate();
-	float GetInputIntensity();
+	bool GetHasMovementInput() const;
+	float GetInputChangeRate() const;
+	float GetInputIntensity() const;	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool HasMovementInput = false;
@@ -47,17 +53,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float InputIntensity = 0.0f; 
 
-
 private:
 	float PreviousInputIntensity = 0.0f;
 	float ChangeCheckInterval = 0.1f;
 	float LastChangeCheckTime = 0.0f;
 
+public:
+	void LockOn();
+	void LockOff();
+	bool GetIsLockOn() const;
+	bool IsTargetVisible(APawn* Pawn);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	bool IsLockOn = false;
+
+	TObjectPtr<APawn> FindClosestPawn();
+
 private:
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float MaxLockOnDistance = 1000.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class USpringArmComponent> SpringArm;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UCameraComponent> Camera;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	TObjectPtr<APawn> TargetPawn = nullptr;
 };

@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "BBCharacter.h"
 
+//Use template if At least 2 Pawn would be used
 ABBPlayerController::ABBPlayerController()
 {
 }
@@ -42,6 +43,7 @@ void ABBPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ABBPlayerController::StartJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopJump);
+		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Completed, this, &ABBPlayerController::LockOn);
 	}
 }
 
@@ -67,4 +69,13 @@ void ABBPlayerController::StopJump()
 
 void ABBPlayerController::Attack()
 {
+}
+
+void ABBPlayerController::LockOn()
+{
+	bool LockCheck = BCharacter->GetIsLockOn();
+	if (!LockCheck)
+		BCharacter->LockOn();
+	else
+		BCharacter->LockOff();
 }

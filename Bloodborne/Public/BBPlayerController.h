@@ -31,6 +31,7 @@ public:
 	void StartJump();
 	void StopJump();
 	void Attack();
+	void LockOn();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
@@ -44,6 +45,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	TObjectPtr<class UInputAction> JumpAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+	TObjectPtr<class UInputAction> LockOnAction;
 
 	UPROPERTY()
 	TObjectPtr<ABBCharacter> BCharacter;

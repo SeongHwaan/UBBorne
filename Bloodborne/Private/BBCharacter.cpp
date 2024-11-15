@@ -7,6 +7,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "InputActionValue.h"
+#include "EngineUtils.h"
+#include "DrawDebugHelpers.h"
 	
 ABBCharacter::ABBCharacter()
 {
@@ -56,6 +58,20 @@ void ABBCharacter::Tick(float DeltaTime)
 		HasMovementInput = false;
 		LastChangeCheckTime = GetWorld()->GetTimeSeconds();
 	}
+
+	if (TargetPawn != nullptr)
+	{
+		float InterpSpeed = 10.0f;
+		FRotator TargetRotation = (TargetPawn->GetActorLocation() - GetActorLocation()).Rotation();
+		FRotator NewRotation = FMath::RInterpTo(GetControlRotation(), TargetRotation, DeltaTime, InterpSpeed);
+		GetController()->SetControlRotation(NewRotation);
+
+		if (FVector::Dist(TargetPawn->GetActorLocation(), GetActorLocation()) > MaxLockOnDistance)
+		{
+			IsLockOn = false;
+			TargetPawn = nullptr;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -91,27 +107,120 @@ void ABBCharacter::Move(const FVector2D& Vector)
 	{
 		InputChangeRate = FMath::Abs(InputIntensity - PreviousInputIntensity);
 		PreviousInputIntensity = InputIntensity;
-		LastChangeRateCheckTime = CurrentTime;
+		LastChangeCheckTime = CurrentTime;
 	}
 }
 
 void ABBCharacter::Look(const FVector2D& Vector)
 {
-	AddControllerPitchInput(Vector.Y);
-	AddControllerYawInput(Vector.X);
+	if (!IsLockOn)
+	{
+		AddControllerPitchInput(Vector.Y);
+		AddControllerYawInput(Vector.X);
+	}
+	else if (IsLockOn)
+	{
+
+	}
 }
 
-bool ABBCharacter::GetHasMovementInput()
+bool ABBCharacter::GetHasMovementInput() const
 {
 	return HasMovementInput;
 }
 
-float ABBCharacter::GetInputChangeRate()
+float ABBCharacter::GetInputChangeRate() const
 {
 	return InputChangeRate;
 }
 
-float ABBCharacter::GetInputIntensity()
+float ABBCharacter::GetInputIntensity() const
 {
 	return InputIntensity;
+}
+
+void ABBCharacter::LockOn()
+{
+	IsLockOn = true;
+	TargetPawn = FindClosestPawn();
+}
+
+void ABBCharacter::LockOff()
+{
+	IsLockOn = false;
+	TargetPawn = nullptr;
+}
+
+bool ABBCharacter::GetIsLockOn() const
+{
+	return IsLockOn;
+}
+
+bool ABBCharacter::IsTargetVisible(APawn* Target)
+{
+	FVector Start = Camera->GetComponentLocation(); 
+	FVector End = Target->GetActorLocation();   
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); 
+	Params.AddIgnoredActor(Target);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1.0f, 0, 2.0f);
+
+	if (bHit)
+	{
+		return false;
+	}
+	return true;
+}
+
+TObjectPtr<APawn> ABBCharacter::FindClosestPawn()
+{
+	float ClosestDistance = MaxLockOnDistance;
+	float FOV = Camera->FieldOfView;
+
+	TObjectPtr<APawn> ClosestPawn = nullptr;
+
+	for (TActorIterator<APawn> It(GetWorld()); It; ++It)
+	{
+		float Distance = FVector::Dist(It->GetActorLocation(), GetActorLocation());
+		TObjectPtr<APawn> CurrentTargetPawn = *It;
+		if (CurrentTargetPawn == this || Distance > MaxLockOnDistance)
+			continue;
+
+		FVector ToTarget = (CurrentTargetPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		FVector Forward = Camera->GetForwardVector();
+
+		float DotProduct = FVector::DotProduct(Forward, ToTarget);
+		float Angle = FMath::Acos(DotProduct) * (180.0f / PI);
+
+		if (Angle > FOV)
+		{
+			continue; 
+		}
+
+		if (!IsTargetVisible(CurrentTargetPawn))
+		{
+			continue;
+		}
+
+		if (Distance < ClosestDistance)
+		{
+			ClosestDistance = Distance;
+			ClosestPawn = CurrentTargetPawn;
+		}
+	}
+
+	if (ClosestPawn)
+	{
+		IsLockOn = true;
+		return ClosestPawn;
+	}
+	else
+	{
+		IsLockOn = false;
+		return nullptr;
+	}
 }
