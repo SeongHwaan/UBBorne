@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BBPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "BBCharacter.h"
+#include "HunterCharacter.h"
 
 //Use template if At least 2 Pawn would be used
 ABBPlayerController::ABBPlayerController()
@@ -25,7 +25,7 @@ void ABBPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BCharacter = Cast<ABBCharacter>(GetCharacter());
+	BCharacter = Cast<AHunterCharacter>(GetCharacter());
 
 	if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
@@ -44,6 +44,10 @@ void ABBPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ABBPlayerController::StartJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopJump);
 		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Completed, this, &ABBPlayerController::LockOn);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ABBPlayerController::Dodge);
+        EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Completed, this, &ABBPlayerController::DodgeEnd);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Sprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopSprint);
 	}
 }
 
@@ -73,9 +77,29 @@ void ABBPlayerController::Attack()
 
 void ABBPlayerController::LockOn()
 {
-	bool LockCheck = BCharacter->GetIsLockOn();
-	if (!LockCheck)
+	bool bLockCheck = BCharacter->GetIsLockOn();
+	if (!bLockCheck)
 		BCharacter->LockOn();
 	else
 		BCharacter->LockOff();
+}
+
+void ABBPlayerController::Dodge()
+{
+	BCharacter->Dodging();
+}
+
+void ABBPlayerController::DodgeEnd()
+{
+    BCharacter->StopDodging();
+}
+
+void ABBPlayerController::Sprint()
+{
+	BCharacter->Sprinting();
+}
+
+void ABBPlayerController::StopSprint()
+{
+	BCharacter->StopSprinting();
 }

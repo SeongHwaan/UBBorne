@@ -1,11 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "Bloodborne.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
-#include "BBCharacter.h"
 #include "BBPlayerController.generated.h"
 
 /**
@@ -32,6 +31,10 @@ public:
 	void StopJump();
 	void Attack();
 	void LockOn();
+	void Dodge();
+    void DodgeEnd();
+	void Sprint();
+	void StopSprint();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
@@ -48,7 +51,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	TObjectPtr<class UInputAction> LockOnAction;
+	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+	TObjectPtr<class UInputAction> DodgeAction;
+	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+	TObjectPtr<class UInputAction> SprintAction;
 
+    //Can be improved to preserve polymorphism
 	UPROPERTY()
-	TObjectPtr<ABBCharacter> BCharacter;
+	TObjectPtr<class AHunterCharacter> BCharacter;
 };
