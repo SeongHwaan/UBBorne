@@ -11,6 +11,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "HunterAnimInstance.h"
+#include "BBWeapon.h"
 
 AHunterCharacter::AHunterCharacter()
 {
@@ -42,11 +43,19 @@ AHunterCharacter::AHunterCharacter()
 
     CurrentMovementState = noneState.get();
     ECurrentMovementState = EMovementState::None;
+
+    RightWeaponSocket = FName(TEXT("hand_rSocket"));
 }
 
 void AHunterCharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (WeaponClass)
+    {
+        auto Weapon = GetWorld()->SpawnActor<ABBWeapon>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator);
+        SetRightWeapon(Weapon);
+    }
 }
 
 void AHunterCharacter::Tick(float DeltaTime)
@@ -56,21 +65,22 @@ void AHunterCharacter::Tick(float DeltaTime)
     if (GetCharacterMovement()->GetCurrentAcceleration().Size() != 0)
     {
         HasMovementInput = true;
-        SetMovementState(EMovementState::None);
-        CurrentMovementState = noneState.get();
     }
     else
     {
         HasMovementInput = false;
         LastChangeCheckTime = GetWorld()->GetTimeSeconds();
+        SetMovementState(EMovementState::None);
+        CurrentMovementState = noneState.get();
     }
 
     if (TargetPawn != nullptr)
     {
-        float InterpSpeed = 10.0f;
+        float InterpSpeed = 6.0f;
         FRotator TargetRotation = (TargetPawn->GetActorLocation() - GetActorLocation()).Rotation();
         FRotator NewRotation = FMath::RInterpTo(GetControlRotation(), TargetRotation, DeltaTime, InterpSpeed);
         GetController()->SetControlRotation(NewRotation);
+        SetActorRotation(NewRotation);
 
         if (FVector::Dist(TargetPawn->GetActorLocation(), GetActorLocation()) > MaxLockOnDistance)
         {
@@ -109,6 +119,10 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     else if (InputIntensity >= 0.9f)
     {
         ECurrentMovementState = EMovementState::Run;
+    }
+    else
+    {
+        ECurrentMovementState = EMovementState::None;
     }
     //State Pattern
     SetMovementState(ECurrentMovementState);
@@ -160,6 +174,7 @@ void AHunterCharacter::Attack()
 void AHunterCharacter::Sprinting()
 {
     IsSprinting = true;
+    this->LockOff();
 }
 
 void AHunterCharacter::StopSprinting()
@@ -227,10 +242,15 @@ void AHunterCharacter::SetMovementState(EMovementState NewState)
 
 void AHunterCharacter::LockOn()
 {
-    IsLockOn = true;
     TargetPawn = FindClosestPawn();
-    GetCharacterMovement()->bOrientRotationToMovement = false;
-    GetCharacterMovement()->bUseControllerDesiredRotation = true;
+    if (TargetPawn != nullptr)
+    {
+        IsLockOn = true;
+        GetCharacterMovement()->bOrientRotationToMovement = false;
+        GetCharacterMovement()->bUseControllerDesiredRotation = true;
+
+        this->StopSprinting();
+    }
 }
 
 void AHunterCharacter::LockOff()
@@ -313,6 +333,23 @@ TObjectPtr<APawn> AHunterCharacter::FindClosestPawn()
         IsLockOn = false;
         return nullptr;
     }
+}
+
+void AHunterCharacter::SetRightWeapon(ABBWeapon* NewWeapon)
+{
+    if (CurrentWeapon != nullptr)
+	{
+		CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		CurrentWeapon->Destroy();
+		CurrentWeapon = nullptr;
+	}
+
+	if (NewWeapon != nullptr)
+	{
+		NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, RightWeaponSocket);
+		NewWeapon->SetOwner(this);
+		CurrentWeapon = NewWeapon;
+	}
 }
 
 void AHunterCharacter::MovementState::Move(AHunterCharacter* Chr)

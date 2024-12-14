@@ -33,7 +33,8 @@ public:
 	void LockOn();
 	void Dodge();
     void DodgeEnd();
-	void Sprint();
+    void StartSprint();
+	void Sprinting();
 	void StopSprint();
 
 private:
@@ -59,4 +60,6 @@ private:
     //Can be improved to preserve polymorphism
 	UPROPERTY()
 	TObjectPtr<class AHunterCharacter> BCharacter;
+
+    UEnhancedInputComponent* EnhancedInputComponent;
 };

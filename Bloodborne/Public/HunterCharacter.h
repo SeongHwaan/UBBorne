@@ -157,5 +157,16 @@ private:
     std::unique_ptr<RunState> runState = std::make_unique<RunState>();
     std::unique_ptr<SprintState> sprintState = std::make_unique<SprintState>();
 
-    
+//Weapon
+public:
+
+    void SetRightWeapon(class ABBWeapon* NewWeapon);
+
+    FName RightWeaponSocket;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+    TSubclassOf<class ABBWeapon> WeaponClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+    TObjectPtr<class ABBWeapon> CurrentWeapon;
+
 };

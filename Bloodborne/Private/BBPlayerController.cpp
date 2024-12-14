@@ -37,7 +37,8 @@ void ABBPlayerController::BeginPlay()
 void ABBPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+    EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	if (EnhancedInputComponent)
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Look);
@@ -46,7 +47,8 @@ void ABBPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Completed, this, &ABBPlayerController::LockOn);
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ABBPlayerController::Dodge);
         EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Completed, this, &ABBPlayerController::DodgeEnd);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Sprint);
+        EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &ABBPlayerController::StartSprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Ongoing, this, &ABBPlayerController::Sprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopSprint);
 	}
 }
@@ -78,8 +80,11 @@ void ABBPlayerController::Attack()
 void ABBPlayerController::LockOn()
 {
 	bool bLockCheck = BCharacter->GetIsLockOn();
-	if (!bLockCheck)
-		BCharacter->LockOn();
+    if (!bLockCheck)
+    {
+        BCharacter->LockOn();
+        BCharacter->StopSprinting();
+    }
 	else
 		BCharacter->LockOff();
 }
@@ -94,9 +99,22 @@ void ABBPlayerController::DodgeEnd()
     BCharacter->StopDodging();
 }
 
-void ABBPlayerController::Sprint()
+void ABBPlayerController::StartSprint()
 {
-	BCharacter->Sprinting();
+    bool bLockCheck = BCharacter->GetIsLockOn();
+    if (bLockCheck)
+    {
+        BCharacter->LockOff();
+    }
+}
+
+void ABBPlayerController::Sprinting()
+{
+    bool bLockCheck = BCharacter->GetIsLockOn();
+    if (!bLockCheck)
+    {
+        BCharacter->Sprinting();
+    }
 }
 
 void ABBPlayerController::StopSprint()
