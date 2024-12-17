@@ -45,6 +45,9 @@ AHunterCharacter::AHunterCharacter()
     ECurrentMovementState = EMovementState::None;
 
     RightWeaponSocket = FName(TEXT("hand_rSocket"));
+
+
+    CurrentRWeaponState = SawCleaver.get();
 }
 
 void AHunterCharacter::BeginPlay()
@@ -64,11 +67,11 @@ void AHunterCharacter::Tick(float DeltaTime)
 
     if (GetCharacterMovement()->GetCurrentAcceleration().Size() != 0)
     {
-        HasMovementInput = true;
+        bHasMovementInput = true;
     }
     else
     {
-        HasMovementInput = false;
+        bHasMovementInput = false;
         LastChangeCheckTime = GetWorld()->GetTimeSeconds();
         SetMovementState(EMovementState::None);
         CurrentMovementState = noneState.get();
@@ -93,6 +96,17 @@ void AHunterCharacter::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
     HAnim = Cast<UHunterAnimInstance>(GetMesh()->GetAnimInstance());
+
+    HAnim->OnMontageEnded.AddDynamic(this, &AHunterCharacter::OnAttackMontageEnded);
+    HAnim->OnNextAttackCheck.AddLambda([this]() -> void {
+        CanNextCombo = false;
+
+        if (IsComboInputOn)
+        {
+            AttackStartComboState();
+            HAnim->JumpToLightShortAttackMontageSection(CurrentCombo);
+        }
+        });
 }
 
 void AHunterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -108,7 +122,7 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     InputIntensity = Vector.Size();
     targetSpeed = 0.0f;
 
-    if (IsSprinting)
+    if (bIsSprinting)
     {
         ECurrentMovementState = EMovementState::Sprint;
     }
@@ -156,46 +170,47 @@ void AHunterCharacter::Move(const FVector2D& Vector)
 
 void AHunterCharacter::Look(const FVector2D& Vector)
 {
-    if (!IsLockOn)
+    if (!bIsLockOn)
     {
         AddControllerPitchInput(Vector.Y);
         AddControllerYawInput(Vector.X);
     }
-    else if (IsLockOn)
+    else if (bIsLockOn)
     {
         //ChangeNearPawn By Direction
     }
 }
 
-void AHunterCharacter::Attack()
-{
-}
-
 void AHunterCharacter::Sprinting()
 {
-    IsSprinting = true;
+    bIsSprinting = true;
     this->LockOff();
 }
 
 void AHunterCharacter::StopSprinting()
 {
-    IsSprinting = false;
+    bIsSprinting = false;
 }
 
 void AHunterCharacter::Dodging()
 {
-    IsDodging = true;
-    HAnim->PlayDodgeMontage();
+    bIsDodging = true;
+    if (!bHasMovementInput)
+        HAnim->PlayBackstepMontage();
+    else if (bIsLockOn)
+        HAnim->PlayLockOnDodgeMontage();
+    else
+        HAnim->PlayRollMontage();
 }
 
 void AHunterCharacter::StopDodging()
 {
-    IsDodging = false;
+    bIsDodging = false;
 }
 
 bool AHunterCharacter::GetHasMovementInput() const
 {
-    return HasMovementInput;
+    return bHasMovementInput;
 }
 
 float AHunterCharacter::GetInputChangeRate() const
@@ -210,12 +225,12 @@ float AHunterCharacter::GetInputIntensity() const
 
 bool AHunterCharacter::GetIsSprinting() const
 {
-    return IsSprinting;
+    return bIsSprinting;
 }
 
 bool AHunterCharacter::GetIsDodging() const
 {
-    return IsDodging;
+    return bIsDodging;
 }
 
 float AHunterCharacter::GetDirectionAngle() const
@@ -245,7 +260,7 @@ void AHunterCharacter::LockOn()
     TargetPawn = FindClosestPawn();
     if (TargetPawn != nullptr)
     {
-        IsLockOn = true;
+        bIsLockOn = true;
         GetCharacterMovement()->bOrientRotationToMovement = false;
         GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
@@ -255,7 +270,7 @@ void AHunterCharacter::LockOn()
 
 void AHunterCharacter::LockOff()
 {
-    IsLockOn = false;
+    bIsLockOn = false;
     TargetPawn = nullptr;
     GetCharacterMovement()->bOrientRotationToMovement = true;
     GetCharacterMovement()->bUseControllerDesiredRotation = false;
@@ -263,7 +278,7 @@ void AHunterCharacter::LockOff()
 
 bool AHunterCharacter::GetIsLockOn() const
 {
-    return IsLockOn;
+    return bIsLockOn;
 }
 
 bool AHunterCharacter::IsTargetVisible(APawn* Target)
@@ -325,12 +340,12 @@ TObjectPtr<APawn> AHunterCharacter::FindClosestPawn()
 
     if (ClosestPawn)
     {
-        IsLockOn = true;
+        bIsLockOn = true;
         return ClosestPawn;
     }
     else
     {
-        IsLockOn = false;
+        bIsLockOn = false;
         return nullptr;
     }
 }
@@ -350,6 +365,41 @@ void AHunterCharacter::SetRightWeapon(ABBWeapon* NewWeapon)
 		NewWeapon->SetOwner(this);
 		CurrentWeapon = NewWeapon;
 	}
+}
+
+void AHunterCharacter::LightAttack()
+{
+    CurrentRWeaponState->LightAttack(this);
+}
+
+void AHunterCharacter::HeavyAttack()
+{
+    CurrentRWeaponState->HeavyAttack(this);
+}
+
+void AHunterCharacter::WeaponChange()
+{
+    CurrentRWeaponState->WeaponChange(this);
+}
+
+void AHunterCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+    IsAttacking = false;
+    AttackEndComboState();
+}
+
+void AHunterCharacter::AttackStartComboState()
+{
+    CanNextCombo = true;
+    IsComboInputOn = false;
+    CurrentCombo = FMath::Clamp<int32>(CurrentCombo + 1, 1, MaxCombo);
+}
+
+void AHunterCharacter::AttackEndComboState()
+{
+    IsComboInputOn = false;
+    CanNextCombo = false;
+    CurrentCombo = 0;
 }
 
 void AHunterCharacter::MovementState::Move(AHunterCharacter* Chr)
@@ -374,4 +424,39 @@ void AHunterCharacter::RunState::Move(AHunterCharacter* Chr)
 void AHunterCharacter::SprintState::Move(AHunterCharacter* Chr)
 {
     Chr->targetSpeed = 0.65f;
+}
+
+void AHunterCharacter::SawCleaverState::LightAttack(AHunterCharacter* Chr)
+{
+    auto& Anim = Chr->HAnim;
+    if (Chr->IsAttacking)
+    {
+        if (Chr->CanNextCombo)
+        {
+            Chr->IsComboInputOn = true;
+        }
+    }
+    else
+    {
+        Chr->AttackStartComboState();
+        Anim->PlayLightShortAttackMontage();
+        Anim->JumpToLightShortAttackMontageSection(Chr->CurrentCombo);
+        Chr->IsAttacking = true;
+    }
+}
+
+void AHunterCharacter::SawCleaverState::HeavyAttack(AHunterCharacter* Chr)
+{
+}
+
+void AHunterCharacter::SawCleaverState::WeaponChange(AHunterCharacter* Chr)
+{
+}
+
+void AHunterCharacter::SawCleaverState::AttackStartComboState(AHunterCharacter* Chr)
+{
+}
+
+void AHunterCharacter::SawCleaverState::AttackEndComboState(AHunterCharacter* Chr)
+{
 }

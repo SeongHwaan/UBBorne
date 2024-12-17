@@ -50,6 +50,9 @@ void ABBPlayerController::SetupInputComponent()
         EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &ABBPlayerController::StartSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Ongoing, this, &ABBPlayerController::Sprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopSprint);
+
+        EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &ABBPlayerController::LightAttack);
+
 	}
 }
 
@@ -70,10 +73,6 @@ void ABBPlayerController::StartJump()
 }
 
 void ABBPlayerController::StopJump()
-{
-}
-
-void ABBPlayerController::Attack()
 {
 }
 
@@ -120,4 +119,19 @@ void ABBPlayerController::Sprinting()
 void ABBPlayerController::StopSprint()
 {
 	BCharacter->StopSprinting();
+}
+
+void ABBPlayerController::LightAttack()
+{
+    BCharacter->LightAttack();
+}
+
+void ABBPlayerController::HeavyAttack()
+{
+    BCharacter->HeavyAttack();
+}
+
+void ABBPlayerController::WeaponChange()
+{
+    BCharacter->WeaponChange();
 }

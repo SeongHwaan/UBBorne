@@ -7,6 +7,9 @@
 #include "Animation/AnimInstance.h"
 #include "HunterAnimInstance.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnNextAttatckCheckDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnAttackHitCheckDelegate);
+
 UCLASS()
 class BLOODBORNE_API UHunterAnimInstance : public UAnimInstance
 {
@@ -16,9 +19,21 @@ public:
 	UHunterAnimInstance();
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-    void PlayDodgeMontage();
+private:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
+    EMovementState MovementState = EMovementState::None;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<class AHunterCharacter> PCharacter;
+
+public:
+    //Movement
+    void PlayLockOnDodgeMontage();
+    void PlayRollMontage();
+    void PlayBackstepMontage();
 
 private:
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
 	float InputIntensity;
 
@@ -37,13 +52,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
 	float MovementDirectionAngle;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
-    EMovementState MovementState = EMovementState::None;
-
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
-    TObjectPtr<class AHunterCharacter> PCharacter;
-
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
     TObjectPtr<UAnimMontage> Forward;
@@ -68,4 +76,30 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
     TObjectPtr<UAnimMontage> BackwardRight;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> Roll;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> Backstep;
+
+public:
+    //Attack
+    FOnNextAttatckCheckDelegate OnNextAttackCheck;
+    FOnAttackHitCheckDelegate OnAttackHitCheck;
+    void PlayLightShortAttackMontage();
+
+    void JumpToLightShortAttackMontageSection(int32 NewSection);
+
+private:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> ShortLightAttack1;
+
+    UFUNCTION()
+    void AnimNotify_AttackHitCheck();
+
+    UFUNCTION()
+    void AnimNotify_NextAttackCheck();
+
+    FName GetAttackMontageSectionName(int32 Section);
 };

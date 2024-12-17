@@ -29,13 +29,17 @@ public:
 	void Look(const FInputActionValue& Value);
 	void StartJump();
 	void StopJump();
-	void Attack();
-	void LockOn();
+
+    void LockOn();
 	void Dodge();
     void DodgeEnd();
     void StartSprint();
 	void Sprinting();
 	void StopSprint();
+
+    void LightAttack();
+    void HeavyAttack();
+    void WeaponChange();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
@@ -56,6 +60,15 @@ private:
 	TObjectPtr<class UInputAction> DodgeAction;
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	TObjectPtr<class UInputAction> SprintAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+    TObjectPtr<class UInputAction> LightAttackAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+    TObjectPtr<class UInputAction> HeavyAttackAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
+    TObjectPtr<class UInputAction> WeaponChangeAction;
 
     //Can be improved to preserve polymorphism
 	UPROPERTY()

@@ -32,7 +32,7 @@ void UHunterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
     MovementState = PCharacter->GetMovementState();
 }
 
-void UHunterAnimInstance::PlayDodgeMontage()
+void UHunterAnimInstance::PlayLockOnDodgeMontage()
 {
     const float angle = MovementDirectionAngle;
     if (FMath::Abs(angle) <= 22.5)
@@ -51,6 +51,42 @@ void UHunterAnimInstance::PlayDodgeMontage()
         Montage_Play(Left, 1.0f);
     else if (-67.5 < angle && angle < -22.5)
         Montage_Play(ForwardLeft, 1.0f);
+}
+
+void UHunterAnimInstance::PlayRollMontage()
+{
+    Montage_Play(Roll, 1.0f);
+}
+
+void UHunterAnimInstance::PlayBackstepMontage()
+{
+    Montage_Play(Backstep, 1.0f);
+}
+
+void UHunterAnimInstance::PlayLightShortAttackMontage()
+{
+    Montage_Play(ShortLightAttack1, 1.0f);
+}
+
+void UHunterAnimInstance::JumpToLightShortAttackMontageSection(int32 NewSection)
+{
+    Montage_JumpToSection(GetAttackMontageSectionName(NewSection), ShortLightAttack1);
+}
+
+void UHunterAnimInstance::AnimNotify_AttackHitCheck()
+{
+    OnAttackHitCheck.Broadcast();
+}
+
+void UHunterAnimInstance::AnimNotify_NextAttackCheck()
+{
+    OnNextAttackCheck.Broadcast();
+}
+
+FName UHunterAnimInstance::GetAttackMontageSectionName(int32 Section)
+{
+	//CHECK(FMath::IsWithinInclusive<int32>(Section, 1, 4), NAME_None);
+	return FName(*FString::Printf(TEXT("%d"), Section));
 }
 
 

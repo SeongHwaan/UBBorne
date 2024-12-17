@@ -6,6 +6,8 @@
 #include "BBCharacter.h"
 #include "HunterCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+
 UENUM(BlueprintType)
 enum class EMovementState : uint8
 {
@@ -46,13 +48,12 @@ private:
     UPROPERTY()
     TObjectPtr<class UHunterAnimInstance> HAnim;
 
-//Normal
+//Normal / Movement
 public:
     void Move(const FVector2D& Vector);
     void Look(const FVector2D& Vector);
     void CustomJump();
     void CustomStopJump();
-    void Attack();
     void Sprinting();
     void StopSprinting();
     void Dodging();
@@ -63,14 +64,10 @@ public:
     float GetInputIntensity() const;
     bool GetIsSprinting() const;
     bool GetIsDodging() const;
-
     float GetDirectionAngle() const;
-    EMovementState GetMovementState() const;
-
-    void SetMovementState(EMovementState State);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool HasMovementInput = false;
+    bool bHasMovementInput = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float InputChangeRate = 0.0f;
@@ -79,13 +76,13 @@ public:
     float InputIntensity = 0.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool IsSprinting = false;
+    bool bIsSprinting = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool IsDodging = false;
+    bool bIsDodging = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool CanAction = false;
+    bool bCanAction = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float MovementDirectionAngle = 0.0f;
@@ -106,7 +103,7 @@ public:
     bool IsTargetVisible(APawn* Pawn);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-    bool IsLockOn = false;
+    bool bIsLockOn = false;
 
     TObjectPtr<APawn> FindClosestPawn();
 
@@ -118,8 +115,12 @@ private:
     TObjectPtr<APawn> TargetPawn = nullptr;
 
 //MovementState
-private:
 
+public:
+    EMovementState GetMovementState() const;
+    void SetMovementState(EMovementState State);
+
+private:
     class MovementState
     {
     public:
@@ -169,4 +170,63 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
     TObjectPtr<class ABBWeapon> CurrentWeapon;
 
+//RightWeaponState
+private:
+    //Section odd / even -> right / left
+    class RWeaponState
+    {
+    public:
+        FOnAttackEndDelegate OnAttackEnd;
+        virtual void LightAttack(AHunterCharacter* Chr) = 0;
+        virtual void HeavyAttack(AHunterCharacter* Chr) = 0;
+        virtual void WeaponChange(AHunterCharacter* Chr) = 0;
+        virtual void AttackStartComboState(AHunterCharacter* Chr) = 0;
+        virtual void AttackEndComboState(AHunterCharacter* Chr) = 0;
+
+        virtual ~RWeaponState() = default;
+    };
+
+    class SawCleaverState : public RWeaponState
+    {
+        void LightAttack(AHunterCharacter* Chr) override;
+        void HeavyAttack(AHunterCharacter* Chr) override;
+        void WeaponChange(AHunterCharacter* Chr) override;
+        void AttackStartComboState(AHunterCharacter* Chr) override;
+        void AttackEndComboState(AHunterCharacter* Chr) override;
+    };
+
+    RWeaponState* CurrentRWeaponState;
+
+    std::unique_ptr<SawCleaverState> SawCleaver = std::make_unique<SawCleaverState>();
+
+//Attack & Damage
+public:
+    
+    //virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+    void LightAttack();
+    void HeavyAttack();
+    void WeaponChange();
+    //void AttackCheck();
+
+    UFUNCTION()
+    void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+    void AttackStartComboState();
+    void AttackEndComboState();
+
+private:
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    bool IsAttacking = false;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    bool CanNextCombo = true;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    bool IsComboInputOn = false;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    int32 CurrentCombo = 0;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    int32 MaxCombo = 5;
 };
