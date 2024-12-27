@@ -2,21 +2,34 @@
 
 
 #include "BBWeapon.h"
+#include "WeaponInstance.h"
 
 // Sets default values
 ABBWeapon::ABBWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-    Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
-    RootComponent = Weapon;
+    WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
+    RootComponent = WeaponMesh;
 
     //Weapon->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
-float ABBWeapon::GetAttackDamage() const
+
+const TObjectPtr<class UWeaponInstance> ABBWeapon::GetWeaponInstance()
 {
-    return 0.0f;
+    return WeaponInstance;
+}
+
+void ABBWeapon::SetWeaponInstance(UWeaponInstance* Instance)
+{
+    WeaponInstance = Instance;
+}
+
+void ABBWeapon::SetWeaponMesh()
+{
+    if (WeaponInstance != nullptr)
+        WeaponMesh->SetSkeletalMesh(WeaponInstance->GetWeaponMesh());
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +43,5 @@ void ABBWeapon::BeginPlay()
 void ABBWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 

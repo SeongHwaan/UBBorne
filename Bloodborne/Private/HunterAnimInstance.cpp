@@ -73,6 +73,11 @@ void UHunterAnimInstance::JumpToLightShortAttackMontageSection(int32 NewSection)
     Montage_JumpToSection(GetAttackMontageSectionName(NewSection), ShortLightAttack1);
 }
 
+void UHunterAnimInstance::PlayRollLightMontage()
+{
+    Montage_Play(RollLightAttack, 1.0f);
+}
+
 void UHunterAnimInstance::AnimNotify_AttackHitCheck()
 {
     OnAttackHitCheck.Broadcast();

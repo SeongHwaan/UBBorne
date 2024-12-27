@@ -15,6 +15,18 @@ enum class EMovementState : uint8
     Walk UMETA(DisplayName = "Walk"),
     Run UMETA(DisplayName = "Run"),
     Sprint UMETA(DisplayName = "Sprint"),
+    Roll UMETA(DisplayName = "Roll"),
+    Dodge UMETA(DisplayName = "Dodge"),
+    Backstep UMETA(DisplayName = "Backstep")
+};
+
+UENUM(BlueprintType)
+enum class EActionType : uint8
+{
+    None UMETA(DisplayName = "None"),
+    LightAttack UMETA(DisplayName = "LightAttack"),
+    HeavyAttack UMETA(DisplayName = "HeavyAttack"),
+    WeaponChange UMETA(DisplayName = "WeaponChange"),
 };
 
 UCLASS()
@@ -59,12 +71,12 @@ public:
     void Dodging();
     void StopDodging();
 
-    bool GetHasMovementInput() const;
-    float GetInputChangeRate() const;
-    float GetInputIntensity() const;
-    bool GetIsSprinting() const;
-    bool GetIsDodging() const;
-    float GetDirectionAngle() const;
+    bool GetHasMovementInput();
+    float GetInputChangeRate();
+    float GetInputIntensity();
+    bool GetIsSprinting();
+    bool GetIsDodging();
+    float GetDirectionAngle();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool bHasMovementInput = false;
@@ -117,89 +129,134 @@ private:
 //MovementState
 
 public:
-    EMovementState GetMovementState() const;
+    EMovementState GetMovementState();
     void SetMovementState(EMovementState State);
+
+   // EActionType GetActionType() const;
+    //void SetActionType(EActionType Action);
 
 private:
     class MovementState
     {
     public:
-        virtual void Move(AHunterCharacter* Chr) = 0;
+        virtual void Move(AHunterCharacter* Chr) {};
+        virtual void HandleAction(AHunterCharacter* Chr, EActionType Action) = 0;
+
         virtual ~MovementState() = default;
     };
 
     class NoneState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
     };
 
     class WalkState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
     };
 
     class RunState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
     };
 
     class SprintState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+    };
+
+    class RollState : public MovementState
+    {
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+    };
+
+    class DodgeState : public MovementState
+    {
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+    };
+
+    class BackstepState : public MovementState
+    {
+        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
     };
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
     EMovementState ECurrentMovementState;
-
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    EActionType ECurrentActionType;
+    //UPROPERTY
     MovementState* CurrentMovementState;
 
     std::unique_ptr<NoneState> noneState = std::make_unique<NoneState>(); 
     std::unique_ptr<WalkState> walkState = std::make_unique<WalkState>();
     std::unique_ptr<RunState> runState = std::make_unique<RunState>();
     std::unique_ptr<SprintState> sprintState = std::make_unique<SprintState>();
+    std::unique_ptr<RollState> rollState = std::make_unique<RollState>();
+    std::unique_ptr<DodgeState> dodgeState = std::make_unique<DodgeState>();
+    std::unique_ptr<BackstepState> backstepState = std::make_unique<BackstepState>();
 
 //Weapon
 public:
 
-    void SetRightWeapon(class ABBWeapon* NewWeapon);
+    //For Inventory Weapon Change, Modify Later
+    //Seperate Set & Remove
+    void SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, FName WeaponName);
+    void SetLeftWeapon(TObjectPtr<class ABBWeapon*>&, FName WeaponName);
+    //RemoveWeapon()
+
+
+private:
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class USingletonResourceManager> ResourceManager;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    UDataTable* WeaponDataTable;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<class ABBWeapon> WeaponClass;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class UWeaponManager> WeaponManager;
 
     FName RightWeaponSocket;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    TSubclassOf<class ABBWeapon> WeaponClass;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class ABBWeapon> CurrentRWeapon;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class ABBWeapon> RWeapon1;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class ABBWeapon> RWeapon2;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-    TObjectPtr<class ABBWeapon> CurrentWeapon;
+
+
+    FName LeftWeaponSocket;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class ABBWeapon> CurrentLWeapon;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class ABBWeapon> LWeapon1;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class ABBWeapon> LWeapon2;
+   
+    FName WeaponName1 = FName(TEXT("SawCleaver"));
+
 
 //RightWeaponState
 private:
     //Section odd / even -> right / left
-    class RWeaponState
-    {
-    public:
-        FOnAttackEndDelegate OnAttackEnd;
-        virtual void LightAttack(AHunterCharacter* Chr) = 0;
-        virtual void HeavyAttack(AHunterCharacter* Chr) = 0;
-        virtual void WeaponChange(AHunterCharacter* Chr) = 0;
-        virtual void AttackStartComboState(AHunterCharacter* Chr) = 0;
-        virtual void AttackEndComboState(AHunterCharacter* Chr) = 0;
 
-        virtual ~RWeaponState() = default;
-    };
 
-    class SawCleaverState : public RWeaponState
-    {
-        void LightAttack(AHunterCharacter* Chr) override;
-        void HeavyAttack(AHunterCharacter* Chr) override;
-        void WeaponChange(AHunterCharacter* Chr) override;
-        void AttackStartComboState(AHunterCharacter* Chr) override;
-        void AttackEndComboState(AHunterCharacter* Chr) override;
-    };
-
-    RWeaponState* CurrentRWeaponState;
-
-    std::unique_ptr<SawCleaverState> SawCleaver = std::make_unique<SawCleaverState>();
+    //split 0, 1 to left and right
+    //add new notify for combo attack montage that can hold combo index
+    //+ add new method for end delegate that make combo index = 0
+    // make case for that combo systems
 
 //Attack & Damage
+//Flow: 1. playercontroller calls Hunter -> Lef / Hea / WeaChan Action
+//      2. Hunter calls HandleAction by its movement state (roll, sprint ...)
+//      3. HandleAction calls weaponstate's method
 public:
     
     //virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

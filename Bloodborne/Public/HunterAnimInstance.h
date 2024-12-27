@@ -84,16 +84,33 @@ private:
     TObjectPtr<UAnimMontage> Backstep;
 
 public:
-    //Attack
     FOnNextAttatckCheckDelegate OnNextAttackCheck;
     FOnAttackHitCheckDelegate OnAttackHitCheck;
-    void PlayLightShortAttackMontage();
 
+    //Saw Cleaver Attack
+    void PlayLightShortAttackMontage();
     void JumpToLightShortAttackMontageSection(int32 NewSection);
+
+    //test
+    void PlayRollLightMontage();
+
 
 private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
     TObjectPtr<UAnimMontage> ShortLightAttack1;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> SLStart;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> Sh1;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> Sh2;
+
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge", Meta = (AllowPrivateAccess = true))
+    TObjectPtr<UAnimMontage> RollLightAttack;
 
     UFUNCTION()
     void AnimNotify_AttackHitCheck();

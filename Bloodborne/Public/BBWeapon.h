@@ -15,21 +15,22 @@ public:
 	// Sets default values for this actor's properties
 	ABBWeapon();
 
-    virtual float GetAttackDamage() const;
+    const TObjectPtr<class UWeaponInstance> GetWeaponInstance();
+    void SetWeaponInstance(class UWeaponInstance* Instance);
+    void SetWeaponMesh();
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
-    UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadWrite, Category = "Attack")
-    float AttackDamage;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    TObjectPtr<USkeletalMeshComponent> Weapon;
+    TObjectPtr<USkeletalMeshComponent> WeaponMesh;
 
+    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    TObjectPtr<class UWeaponInstance> WeaponInstance;
 };
