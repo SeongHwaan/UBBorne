@@ -26,6 +26,7 @@ public:
 	virtual void SetupInputComponent() override;
 
 	void Move(const FInputActionValue& Value);
+    void MoveEnd();
 	void Look(const FInputActionValue& Value);
 	void StartJump();
 	void StopJump();
@@ -72,7 +73,7 @@ private:
 
     //Can be improved to preserve polymorphism
 	UPROPERTY()
-	TObjectPtr<class AHunterCharacter> BCharacter;
+	TObjectPtr<class AHunterCharacter> BBCharacter;
 
     UEnhancedInputComponent* EnhancedInputComponent;
 };

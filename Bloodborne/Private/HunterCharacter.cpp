@@ -56,12 +56,6 @@ AHunterCharacter::AHunterCharacter()
 void AHunterCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    //무기 매니저를 통해서 사용할 무기 이름 넘김
-    //그 무기 이름에 따라 instance 만들어 관리
-    // 그걸 가져와 사용하기
-    // 인벤토리는 정보만으로 관리 >> 정보에서 이름을 가져와 setRightWeapon
-    //추후 아이템 던지는 것과 수혈액 기능 추가
-
     SetRightWeapon(RWeapon1, TEXT("SawCleaver"));
     CurrentRWeapon = RWeapon1;
 }
@@ -70,7 +64,7 @@ void AHunterCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (GetCharacterMovement()->GetCurrentAcceleration().Size() != 0)
+    if (!InputDirection.IsNearlyZero())
     {
         bHasMovementInput = true;
     }
@@ -109,7 +103,7 @@ void AHunterCharacter::PostInitializeComponents()
         if (IsComboInputOn)
         {
             AttackStartComboState();
-            HAnim->JumpToLightShortAttackMontageSection(CurrentCombo);
+            //HAnim->JumpToLightShortAttackMontageSection(CurrentCombo);
         }
         });
     ResourceManager = USingletonResourceManager::Get();
@@ -123,15 +117,30 @@ void AHunterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void AHunterCharacter::Move(const FVector2D& Vector)
 {
-
-    if (HAnim->IsAnyMontagePlaying())
-        return;
-
-    FVector2D InputDirection = Vector;
+    InputDirection = Vector;
     InputDirection.Normalize();
+
+    const FRotator Rotation = GetControlRotation();
+    const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+    const FVector VelocityDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * InputDirection.Y + FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * InputDirection.X;
+    const FVector ForwardDirection = GetActorForwardVector();
+    const double Cos = ForwardDirection.Dot(VelocityDirection);
+    const double Radian = FMath::Acos(Cos);
+    const float Degree = FMath::RadiansToDegrees(Radian);
+    const FVector Cross = FVector::CrossProduct(ForwardDirection, VelocityDirection);
+   
+    if (Cross.Z >= 0.0f)
+        MovementDirectionAngle = Degree;
+    else
+        MovementDirectionAngle = -Degree;
 
     InputIntensity = Vector.Size();
     targetSpeed = 0.0f;
+
+    //Make Bool with Notify, not this function
+    if (HAnim->IsAnyMontagePlaying())
+        return;
 
     if (bIsSprinting)
     {
@@ -153,30 +162,21 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     SetMovementState(ECurrentMovementState);
     CurrentMovementState->Move(this);
 
-    const FRotator Rotation = GetControlRotation();
-    const FRotator YawRotation(0, Rotation.Yaw, 0);
     AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X), InputDirection.Y * targetSpeed);
     AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y), InputDirection.X * targetSpeed);
 
-    float CurrentTime = GetWorld()->GetTimeSeconds();
-    if (CurrentTime - LastChangeCheckTime >= ChangeCheckInterval)
-    {
-        InputChangeRate = FMath::Abs(InputIntensity - PreviousInputIntensity);
-        PreviousInputIntensity = InputIntensity;
-        LastChangeCheckTime = CurrentTime;
-    }
+    //float CurrentTime = GetWorld()->GetTimeSeconds();
+    //if (CurrentTime - LastChangeCheckTime >= ChangeCheckInterval)
+    //{
+    //    InputChangeRate = FMath::Abs(InputIntensity - PreviousInputIntensity);
+    //    PreviousInputIntensity = InputIntensity;
+    //    LastChangeCheckTime = CurrentTime;
+    //}
+}
 
-    const FVector VelocityDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * InputDirection.Y + FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * InputDirection.X;
-    const FVector ForwardDirection = GetActorForwardVector();
-    const double Cos = ForwardDirection.Dot(VelocityDirection);
-    const double Radian = FMath::Acos(Cos);
-    const float Degree = FMath::RadiansToDegrees(Radian);
-    const FVector Cross = FVector::CrossProduct(ForwardDirection, VelocityDirection);
-
-    if (Cross.Z >= 0.0f)
-        MovementDirectionAngle = Degree;
-    else
-        MovementDirectionAngle = -Degree;
+void AHunterCharacter::MoveEnd()
+{
+    InputDirection = FVector2D::ZeroVector;
 }
 
 void AHunterCharacter::Look(const FVector2D& Vector)
@@ -294,7 +294,6 @@ void AHunterCharacter::LockOn()
         bIsLockOn = true;
         GetCharacterMovement()->bOrientRotationToMovement = false;
         GetCharacterMovement()->bUseControllerDesiredRotation = true;
-
         this->StopSprinting();
     }
 }
@@ -404,21 +403,18 @@ void AHunterCharacter::SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, 
 
 void AHunterCharacter::LightAttack()
 {
-    //CurrentRWeaponState->LightAttack(this);
     ECurrentActionType = EActionType::LightAttack;
     CurrentMovementState->HandleAction(this, ECurrentActionType);
 }
 
 void AHunterCharacter::HeavyAttack()
 {
-    //CurrentRWeaponState->HeavyAttack(this);
     ECurrentActionType = EActionType::HeavyAttack;
     CurrentMovementState->HandleAction(this, ECurrentActionType);
 }
 
 void AHunterCharacter::WeaponChange()
 {
-    //CurrentRWeaponState->WeaponChange(this);
     ECurrentActionType = EActionType::WeaponChange;
     CurrentMovementState->HandleAction(this, ECurrentActionType);
 }
@@ -453,16 +449,12 @@ void AHunterCharacter::NoneState::HandleAction(AHunterCharacter* Chr, EActionTyp
     auto& Anim = Chr->HAnim;
     switch (Action) {
     case EActionType::None:
-        // NoneState에서는 이동하지 않음
         break;
     case EActionType::LightAttack:
-        // 가벼운 공격 로직
         break;
     case EActionType::HeavyAttack:
-        // 무거운 공격 로직
         break;
     case EActionType::WeaponChange:
-        // 무기 교체 로직
         break;
     }
 }
@@ -520,12 +512,6 @@ void AHunterCharacter::DodgeState::HandleAction(AHunterCharacter* Chr, EActionTy
 void AHunterCharacter::BackstepState::HandleAction(AHunterCharacter* Chr, EActionType Action)
 {
 }
-
-
-
-
-
-
 
 
 //void AHunterCharacter::SawCleaverState::LightAttack(AHunterCharacter* Chr)

@@ -63,6 +63,7 @@ private:
 //Normal / Movement
 public:
     void Move(const FVector2D& Vector);
+    void MoveEnd();
     void Look(const FVector2D& Vector);
     void CustomJump();
     void CustomStopJump();
@@ -77,6 +78,9 @@ public:
     bool GetIsSprinting();
     bool GetIsDodging();
     float GetDirectionAngle();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    FVector2D InputDirection = FVector2D::ZeroVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool bHasMovementInput = false;

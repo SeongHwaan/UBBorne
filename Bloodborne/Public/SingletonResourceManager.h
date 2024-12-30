@@ -32,7 +32,7 @@ public:
         if (!Instance)
         {
             Instance = NewObject<USingletonResourceManager>();
-            //Not to get deleted
+            //Not to get deleted by GC
             Instance->AddToRoot();
         }
         return Instance;

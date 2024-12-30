@@ -22,7 +22,6 @@ void UHunterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	PCharacter = Cast<AHunterCharacter>(Pawn);
 
 	HasMovementInput = PCharacter->GetHasMovementInput();
-	InputChangeRate = PCharacter->GetInputChangeRate();
 	InputIntensity = PCharacter->GetInputIntensity();
 	IsLockOn = PCharacter->GetIsLockOn();
 	IsSprinting = PCharacter->GetIsSprinting();
@@ -63,21 +62,6 @@ void UHunterAnimInstance::PlayBackstepMontage()
     Montage_Play(Backstep, 1.0f);
 }
 
-void UHunterAnimInstance::PlayLightShortAttackMontage()
-{
-    Montage_Play(ShortLightAttack1, 1.0f);
-}
-
-void UHunterAnimInstance::JumpToLightShortAttackMontageSection(int32 NewSection)
-{
-    Montage_JumpToSection(GetAttackMontageSectionName(NewSection), ShortLightAttack1);
-}
-
-void UHunterAnimInstance::PlayRollLightMontage()
-{
-    Montage_Play(RollLightAttack, 1.0f);
-}
-
 void UHunterAnimInstance::AnimNotify_AttackHitCheck()
 {
     OnAttackHitCheck.Broadcast();
@@ -88,10 +72,5 @@ void UHunterAnimInstance::AnimNotify_NextAttackCheck()
     OnNextAttackCheck.Broadcast();
 }
 
-FName UHunterAnimInstance::GetAttackMontageSectionName(int32 Section)
-{
-	//CHECK(FMath::IsWithinInclusive<int32>(Section, 1, 4), NAME_None);
-	return FName(*FString::Printf(TEXT("%d"), Section));
-}
 
 

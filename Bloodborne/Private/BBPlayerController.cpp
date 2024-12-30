@@ -25,7 +25,7 @@ void ABBPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BCharacter = Cast<AHunterCharacter>(GetCharacter());
+	BBCharacter = Cast<AHunterCharacter>(GetCharacter());
 
 	if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
@@ -41,6 +41,7 @@ void ABBPlayerController::SetupInputComponent()
 	if (EnhancedInputComponent)
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Move);
+        EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ABBPlayerController::MoveEnd);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABBPlayerController::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ABBPlayerController::StartJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopJump);
@@ -59,13 +60,18 @@ void ABBPlayerController::SetupInputComponent()
 void ABBPlayerController::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
-	BCharacter->Move(MovementVector);
+	BBCharacter->Move(MovementVector);
+}
+
+void ABBPlayerController::MoveEnd()
+{
+    BBCharacter->MoveEnd();
 }
 
 void ABBPlayerController::Look(const FInputActionValue& Value)
 {
 	const FVector2D	LookAxisVector = Value.Get<FVector2D>();
-	BCharacter->Look(LookAxisVector);
+	BBCharacter->Look(LookAxisVector);
 }
 
 void ABBPlayerController::StartJump()
@@ -78,60 +84,60 @@ void ABBPlayerController::StopJump()
 
 void ABBPlayerController::LockOn()
 {
-	bool bLockCheck = BCharacter->GetIsLockOn();
+	bool bLockCheck = BBCharacter->GetIsLockOn();
     if (!bLockCheck)
     {
-        BCharacter->LockOn();
-        BCharacter->StopSprinting();
+        BBCharacter->LockOn();
+        BBCharacter->StopSprinting();
     }
 	else
-		BCharacter->LockOff();
+		BBCharacter->LockOff();
 }
 
 void ABBPlayerController::Dodge()
 {
-	BCharacter->Dodging();
+	BBCharacter->Dodging();
 }
 
 void ABBPlayerController::DodgeEnd()
 {
-    BCharacter->StopDodging();
+    BBCharacter->StopDodging();
 }
 
 void ABBPlayerController::StartSprint()
 {
-    bool bLockCheck = BCharacter->GetIsLockOn();
+    bool bLockCheck = BBCharacter->GetIsLockOn();
     if (bLockCheck)
     {
-        BCharacter->LockOff();
+        BBCharacter->LockOff();
     }
 }
 
 void ABBPlayerController::Sprinting()
 {
-    bool bLockCheck = BCharacter->GetIsLockOn();
+    bool bLockCheck = BBCharacter->GetIsLockOn();
     if (!bLockCheck)
     {
-        BCharacter->Sprinting();
+        BBCharacter->Sprinting();
     }
 }
 
 void ABBPlayerController::StopSprint()
 {
-	BCharacter->StopSprinting();
+	BBCharacter->StopSprinting();
 }
 
 void ABBPlayerController::LightAttack()
 {
-    BCharacter->LightAttack();
+    BBCharacter->LightAttack();
 }
 
 void ABBPlayerController::HeavyAttack()
 {
-    BCharacter->HeavyAttack();
+    BBCharacter->HeavyAttack();
 }
 
 void ABBPlayerController::WeaponChange()
 {
-    BCharacter->WeaponChange();
+    BBCharacter->WeaponChange();
 }
