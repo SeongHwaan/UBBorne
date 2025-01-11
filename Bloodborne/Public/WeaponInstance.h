@@ -4,6 +4,7 @@
 
 #include "Bloodborne.h"
 #include "WeaponData.h"
+#include "HunterCharacter.h"
 #include "UObject/NoExportTypes.h"
 #include "WeaponInstance.generated.h"
 
@@ -19,9 +20,20 @@ public:
     UWeaponInstance();
     UWeaponInstance(FName Name);
 
+    void InitializeWeapon();
+
     const TObjectPtr<USkeletalMesh> GetWeaponMesh();
 
-    virtual void LightAttack() {};
+    virtual void LightCombo() {};
+    virtual void HeavyCombo() {};
+    virtual void RollAttack(EActionType Action, EWeaponForm Form);
+    virtual void BackstepAttack() {};
+    virtual void DodgeAttack() {};
+    virtual void JumpAttack() {};
+    virtual void SprintAttack() {};
+    virtual void WeaponChange() {};
+
+    void ResetState();
 
 protected:
     // Don't think UPROPERTY() is necessary
@@ -31,6 +43,10 @@ protected:
     TObjectPtr<USkeletalMesh> WeaponMesh;
     TObjectPtr<UAnimInstance> CurrAnimInstance;
     TMap<FName, UAnimMontage*> LoadedWeaponAnimations;
+
+private:
+    int32 AttackIndex;
+    bool bIsRight;
 };
 
 UCLASS()
@@ -42,7 +58,15 @@ public:
     //HardCoding?
     USawCleaver() : UWeaponInstance(FName(TEXT("SawCleaver"))) {};
 
-    void LightAttack() override;
+    void LightCombo() override;
+    void HeavyCombo() override;
+    //void RollAttack(EActionType Action, EWeaponForm Form) override;
+    void BackstepAttack() override {};
+    void DodgeAttack() override {};
+    void JumpAttack() override {};
+    void SprintAttack() override {};
+    void WeaponChange() override {};
+
 
 };
 

@@ -23,8 +23,8 @@ public:
     // Make it after Inventory
     // void SwitchWeapon():
 
-    TObjectPtr<class UWeaponInstance> SetRWeapon(FName WeaponName);
-    TObjectPtr<class UWeaponInstance> SetLWeapon(FName WeaponName);
+    TObjectPtr<class UWeaponInstance> LoadRWeapon(FName WeaponName);
+    TObjectPtr<class UWeaponInstance> LoadLWeapon(FName WeaponName);
 
 private:
     

@@ -9,6 +9,7 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnNextAttatckCheckDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnAttackHitCheckDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 
 UCLASS()
 class BLOODBORNE_API UHunterAnimInstance : public UAnimInstance
@@ -35,17 +36,10 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
-	float InputIntensity;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
 	bool HasMovementInput;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
 	bool IsLockOn;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
-	bool IsSprinting;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
-	bool IsDodging;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pawn", Meta = (AllowPrivateAccess = true))
 	float MovementDirectionAngle;
@@ -81,8 +75,9 @@ private:
     TObjectPtr<UAnimMontage> Backstep;
 
 public:
-    FOnNextAttatckCheckDelegate OnNextAttackCheck;
+    FOnNextAttatckCheckDelegate OnNextActionCheck;
     FOnAttackHitCheckDelegate OnAttackHitCheck;
+    FOnAttackEndDelegate OnAttackEnd;
 
 private:
 
@@ -92,4 +87,7 @@ private:
 
     UFUNCTION()
     void AnimNotify_NextAttackCheck();
+
+    UFUNCTION()
+    void AnimNotify_AttackEnd();
 };

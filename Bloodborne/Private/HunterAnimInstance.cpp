@@ -22,10 +22,7 @@ void UHunterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	PCharacter = Cast<AHunterCharacter>(Pawn);
 
 	HasMovementInput = PCharacter->GetHasMovementInput();
-	InputIntensity = PCharacter->GetInputIntensity();
 	IsLockOn = PCharacter->GetIsLockOn();
-	IsSprinting = PCharacter->GetIsSprinting();
-	IsDodging = PCharacter->GetIsDodging();
 
     MovementDirectionAngle = PCharacter->GetDirectionAngle();
     MovementState = PCharacter->GetMovementState();
@@ -69,7 +66,12 @@ void UHunterAnimInstance::AnimNotify_AttackHitCheck()
 
 void UHunterAnimInstance::AnimNotify_NextAttackCheck()
 {
-    OnNextAttackCheck.Broadcast();
+    OnNextActionCheck.Broadcast();
+}
+
+void UHunterAnimInstance::AnimNotify_AttackEnd()
+{
+    OnAttackEnd.Broadcast();
 }
 
 

@@ -13,14 +13,15 @@ UWeaponManager::UWeaponManager()
     InitializeWeaponClasses();
 }
 
-TObjectPtr<class UWeaponInstance> UWeaponManager::SetRWeapon(FName WeaponName)
+TObjectPtr<class UWeaponInstance> UWeaponManager::LoadRWeapon(FName WeaponName)
 {
     auto WeaponClass = UWeaponManager::RightWeaponClassMap.Find(WeaponName);
     auto RWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
+    RWeapon->InitializeWeapon();
     return RWeapon;
 }
 
-TObjectPtr<class UWeaponInstance> UWeaponManager::SetLWeapon(FName WeaponName)
+TObjectPtr<class UWeaponInstance> UWeaponManager::LoadLWeapon(FName WeaponName)
 {
     auto WeaponClass = UWeaponManager::LeftWeaponClassMap.Find(WeaponName);
     auto LWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);

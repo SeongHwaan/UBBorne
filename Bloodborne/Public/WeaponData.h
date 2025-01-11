@@ -4,12 +4,13 @@
 
 #include "Bloodborne.h"
 #include "Engine/DataTable.h"
+#include "AttackAnimationData.h"
 #include "WeaponData.generated.h"
 
 USTRUCT(BlueprintType)
 struct FWeaponData : public FTableRowBase
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FName WeaponName;
@@ -28,4 +29,7 @@ struct FWeaponData : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Durability;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FAttackAnimationData> AttackAnimations;
 };

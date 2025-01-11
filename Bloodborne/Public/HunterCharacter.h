@@ -8,6 +8,7 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 
+//Consider bitflag
 UENUM(BlueprintType)
 enum class EMovementState : uint8
 {
@@ -23,10 +24,17 @@ enum class EMovementState : uint8
 UENUM(BlueprintType)
 enum class EActionType : uint8
 {
-    None UMETA(DisplayName = "None"),
     LightAttack UMETA(DisplayName = "LightAttack"),
     HeavyAttack UMETA(DisplayName = "HeavyAttack"),
     WeaponChange UMETA(DisplayName = "WeaponChange"),
+    LeftAttack UMETA(DisplayName = "LeftAttack")
+};
+
+UENUM(BlueprintType)
+enum class EWeaponForm : uint8
+{
+    Normal UMETA(DisplayName = "Normal"),
+    Transformed UMETA(DisplayName = "Transformed")
 };
 
 UCLASS()
@@ -73,8 +81,6 @@ public:
     void StopDodging();
 
     bool GetHasMovementInput();
-    float GetInputChangeRate();
-    float GetInputIntensity();
     bool GetIsSprinting();
     bool GetIsDodging();
     float GetDirectionAngle();
@@ -144,7 +150,7 @@ private:
     {
     public:
         virtual void Move(AHunterCharacter* Chr) {};
-        virtual void HandleAction(AHunterCharacter* Chr, EActionType Action) = 0;
+        virtual void HandleAction(AHunterCharacter* Chr) = 0;
 
         virtual ~MovementState() = default;
     };
@@ -152,46 +158,44 @@ private:
     class NoneState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     class WalkState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     class RunState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     class SprintState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     class RollState : public MovementState
     {
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     class DodgeState : public MovementState
     {
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     class BackstepState : public MovementState
     {
-        void HandleAction(AHunterCharacter* Chr, EActionType Action) override;
+        void HandleAction(AHunterCharacter* Chr) override;
     };
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
     EMovementState ECurrentMovementState;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-    EActionType ECurrentActionType;
     //UPROPERTY
     MovementState* CurrentMovementState;
 
@@ -210,6 +214,9 @@ public:
     //Seperate Set & Remove
     void SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, FName WeaponName);
     void SetLeftWeapon(TObjectPtr<class ABBWeapon*>&, FName WeaponName);
+
+    const EActionType GetActionType();
+    const EWeaponForm GetWeaponForm();
     //RemoveWeapon()
 
 
@@ -246,6 +253,11 @@ private:
    
     FName WeaponName1 = FName(TEXT("SawCleaver"));
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    EActionType ECurrentActionType;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    EWeaponForm ECurrentWeaponForm;
 
 //RightWeaponState
 private:
