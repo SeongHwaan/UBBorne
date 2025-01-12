@@ -19,8 +19,8 @@ UWeaponInstance::UWeaponInstance(FName RowName)
     WeaponDataTable = ResourceManager->GetWeaponDataTable();
     if (WeaponDataTable)
     {
-        WeaponData = ResourceManager->GetWeaponDataTable()->FindRow<FWeaponData>(RowName, TEXT("WeaponData"));
-        LoadedWeaponAnimations = WeaponData->Animations;
+        WeaponData = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT("WeaponData"));
+        LoadedWeaponAnimations = WeaponData->AnimationData;
         WeaponMesh = WeaponData->WeaponMesh;
     }
     else
@@ -48,7 +48,8 @@ void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
         if (Form == EWeaponForm::Normal)
         {
             FName Key1 = FName(TEXT("123"));
-            UAnimMontage* montage = *LoadedWeaponAnimations.Find(Key1);
+            auto AnimationData = *LoadedWeaponAnimations.Find(Key1);
+            UAnimMontage* montage = AnimationData.AttackMontage;
             if (montage)
                 CurrAnimInstance->Montage_Play(montage, 1.0f);
         }
@@ -67,14 +68,14 @@ void UWeaponInstance::ResetState()
 
 void USawCleaver::LightCombo()
 {
-    FName Key1 = FName(TEXT("123"));
+    //FName Key1 = FName(TEXT("123"));
 
-    UAnimMontage* montage = *LoadedWeaponAnimations.Find(Key1);
+    //UAnimMontage* montage = *LoadedWeaponAnimations.Find(Key1);
 
-    if (montage)
-    {
-        CurrAnimInstance->Montage_Play(montage, 1.0f);
-    }
+    //if (montage)
+    //{
+    //    CurrAnimInstance->Montage_Play(montage, 1.0f);
+    //}
 }
 
 void USawCleaver::HeavyCombo()

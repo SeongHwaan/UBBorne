@@ -16,7 +16,7 @@ struct FAttackAnimationData : public FTableRowBase
     class UAnimMontage* AttackMontage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float Damage;
+    float DamageRate;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float StaminaCost;

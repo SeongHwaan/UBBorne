@@ -16,20 +16,15 @@ struct FWeaponData : public FTableRowBase
     FName WeaponName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<class UWeaponInstance> WeaponClass;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<FName, class UAnimMontage*> Animations;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<USkeletalMesh> WeaponMesh;
 
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 AttackPower;
+    int32 DefaultDamage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Durability;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TArray<FAttackAnimationData> AttackAnimations;
+    TMap<FName, FAttackAnimationData> AnimationData;
 };

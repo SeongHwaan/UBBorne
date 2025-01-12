@@ -42,7 +42,7 @@ protected:
     FWeaponData* WeaponData;
     TObjectPtr<USkeletalMesh> WeaponMesh;
     TObjectPtr<UAnimInstance> CurrAnimInstance;
-    TMap<FName, UAnimMontage*> LoadedWeaponAnimations;
+    TMap<FName, FAttackAnimationData> LoadedWeaponAnimations;
 
 private:
     int32 AttackIndex;
