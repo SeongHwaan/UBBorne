@@ -17,7 +17,7 @@ class BLOODBORNE_API UWeaponInstance : public UObject
 	GENERATED_BODY()
 
 public:
-    UWeaponInstance();
+    UWeaponInstance() {};
     UWeaponInstance(FName Name);
 
     void InitializeWeapon();
@@ -37,7 +37,8 @@ public:
 
 protected:
     // Don't think UPROPERTY() is necessary
-    TObjectPtr<class USingletonResourceManager> ResourceManager;
+    TObjectPtr<class UResourceManager> ResourceManager;
+    FName WeaponName;
     TObjectPtr<UDataTable> WeaponDataTable;
     FWeaponData* WeaponData;
     TObjectPtr<USkeletalMesh> WeaponMesh;

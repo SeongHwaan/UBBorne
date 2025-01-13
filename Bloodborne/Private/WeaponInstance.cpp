@@ -3,30 +3,29 @@
 
 #include "WeaponInstance.h"
 #include "HunterAnimInstance.h"
-#include "SingletonResourceManager.h"
-
-
-UWeaponInstance::UWeaponInstance()
-{
-}
+#include "ResourceManager.h"
 
 UWeaponInstance::UWeaponInstance(FName RowName)
 {
     AttackIndex = 1;
     bIsRight = true;
+    WeaponName = RowName;
 
-    ResourceManager = USingletonResourceManager::Get();
-    WeaponDataTable = ResourceManager->GetWeaponDataTable();
-    if (WeaponDataTable)
+    if (UWorld* World = GetWorld())
     {
-        WeaponData = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT("WeaponData"));
-        LoadedWeaponAnimations = WeaponData->AnimationData;
-        WeaponMesh = WeaponData->WeaponMesh;
-    }
-    else
-        UE_LOG(LogTemp, Warning, TEXT("Instance DataTable error"));
+        ResourceManager = World->GetGameInstance()->GetSubsystem<UResourceManager>();
+        WeaponDataTable = ResourceManager->GetWeaponDataTable();
+        if (WeaponDataTable)
+        {
+            WeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponName, TEXT("WeaponData"));
+            LoadedWeaponAnimations = WeaponData->AnimationData;
+            WeaponMesh = WeaponData->WeaponMesh;
+        }
+        else
+            UE_LOG(LogTemp, Warning, TEXT("Instance DataTable error"));
 
-    CurrAnimInstance = ResourceManager->GetAnimInstance();
+        CurrAnimInstance = ResourceManager->GetAnimInstance();
+    }
 }
 
 void UWeaponInstance::InitializeWeapon()
@@ -45,7 +44,7 @@ void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
 {
     if (Action == EActionType::LightAttack)
     {
-        if (Form == EWeaponForm::Normal)
+        if (Form == EWeaponForm::Regular)
         {
             FName Key1 = FName(TEXT("123"));
             auto AnimationData = *LoadedWeaponAnimations.Find(Key1);

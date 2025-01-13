@@ -6,7 +6,6 @@
 #include "Animation/AnimMontage.h"
 #include "WeaponData.h"
 #include "WeaponInstance.h"
-#include "SingletonResourceManager.h"
 
 UWeaponManager::UWeaponManager()
 {
@@ -15,6 +14,7 @@ UWeaponManager::UWeaponManager()
 
 TObjectPtr<class UWeaponInstance> UWeaponManager::LoadRWeapon(FName WeaponName)
 {
+    //Make Exception Later
     auto WeaponClass = UWeaponManager::RightWeaponClassMap.Find(WeaponName);
     auto RWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
     RWeapon->InitializeWeapon();

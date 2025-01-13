@@ -14,7 +14,7 @@
 #include "BBWeapon.h"
 #include "WeaponManager.h"
 #include "WeaponInstance.h"
-#include "SingletonResourceManager.h"
+#include "ResourceManager.h"
 
 AHunterCharacter::AHunterCharacter()
 {
@@ -47,7 +47,7 @@ AHunterCharacter::AHunterCharacter()
     ECurrentMovementState = EMovementState::None;
     SetMovementState(ECurrentMovementState);
 
-    ECurrentWeaponForm = EWeaponForm::Normal;
+    ECurrentWeaponForm = EWeaponForm::Regular;
 
     RightWeaponSocket = FName(TEXT("hand_rSocket"));
     WeaponManager = CreateDefaultSubobject<UWeaponManager>(TEXT("WeaponManager"));
@@ -106,7 +106,8 @@ void AHunterCharacter::PostInitializeComponents()
             //HAnim->JumpToLightShortAttackMontageSection(CurrentCombo);
         }
         });
-    ResourceManager = USingletonResourceManager::Get();
+
+    ResourceManager = GetGameInstance()->GetSubsystem<UResourceManager>();
     ResourceManager->Initialize(HAnim, WeaponDataTable);
 }
 
@@ -380,7 +381,7 @@ void AHunterCharacter::SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, 
     }
 
     auto NewWeapon = GetWorld()->SpawnActor<ABBWeapon>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator);
-    auto WeaponInstance = WeaponManager->LoadRWeapon(FName(TEXT("SawCleaver")));
+    auto WeaponInstance = WeaponManager->LoadRWeapon(WeaponName);
     if (WeaponInstance)
     {
         NewWeapon->SetWeaponInstance(WeaponInstance);

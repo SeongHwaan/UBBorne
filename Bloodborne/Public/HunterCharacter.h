@@ -33,7 +33,7 @@ enum class EActionType : uint8
 UENUM(BlueprintType)
 enum class EWeaponForm : uint8
 {
-    Normal UMETA(DisplayName = "Normal"),
+    Regular UMETA(DisplayName = "Regular"),
     Transformed UMETA(DisplayName = "Transformed")
 };
 
@@ -222,8 +222,9 @@ public:
 
 private:
     
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-    TObjectPtr<class USingletonResourceManager> ResourceManager;
+    TObjectPtr<class UResourceManager> ResourceManager;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     UDataTable* WeaponDataTable;
@@ -268,6 +269,8 @@ private:
     //add new notify for combo attack montage that can hold combo index
     //+ add new method for end delegate that make combo index = 0
     // make case for that combo systems
+
+    //Right to Left : even    /   Left to Right : odd
 
 //Attack & Damage
 //Flow: 1. playercontroller calls Hunter -> Lef / Hea / WeaChan Action
