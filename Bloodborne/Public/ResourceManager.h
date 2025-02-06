@@ -18,7 +18,7 @@ public:
 
     UResourceManager() {};
 
-    void Initialize(UAnimInstance* InAnimInstance, UDataTable* InDataTable);
+    void DoInitialize(UAnimInstance* InAnimInstance, UDataTable* InDataTable);
     const TObjectPtr<UDataTable> GetWeaponDataTable();
     const TObjectPtr<UAnimInstance> GetAnimInstance();
 

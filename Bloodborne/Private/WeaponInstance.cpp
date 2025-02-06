@@ -31,8 +31,8 @@ UWeaponInstance::UWeaponInstance(FName RowName)
 void UWeaponInstance::InitializeWeapon()
 {
     // Delegate in PostInitializeComponents or BeginPlay rather than a constructor.
-    auto Anim = Cast<UHunterAnimInstance>(CurrAnimInstance);
-    Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
+    //auto Anim = Cast<UHunterAnimInstance>(CurrAnimInstance);
+    //Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
 }
 
 const TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh()
@@ -40,23 +40,100 @@ const TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh()
     return WeaponMesh;
 }
 
-void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
+void UWeaponInstance::LightCombo(EWeaponForm Form)
 {
-    if (Action == EActionType::LightAttack)
+    FName Key;
+    if (Form == EWeaponForm::Regular)
+    {
+        
+    }
+        
+    else if (Form == EWeaponForm::Transformed)    
+    {
+
+
+    }
+
+    PlayAttackAnim(Key);
+}
+
+void UWeaponInstance::HeavyStart(EActionType Action, EWeaponForm Form)
+{
+    //CanDoNextAction을 애님 시작 전에 체크
+    FName Key;
+    if (Action == EActionType::HeavyAttack)
     {
         if (Form == EWeaponForm::Regular)
         {
-            FName Key1 = FName(TEXT("123"));
-            auto AnimationData = *LoadedWeaponAnimations.Find(Key1);
-            UAnimMontage* montage = AnimationData.AttackMontage;
-            if (montage)
-                CurrAnimInstance->Montage_Play(montage, 1.0f);
+            Key = FName(TEXT("RHeavyStart"));
         }
         else if (Form == EWeaponForm::Transformed)
         {
 
         }
     }
+
+    PlayAttackAnim(Key);
+}
+
+void UWeaponInstance::HeavyEnd(EWeaponForm Form)
+{
+    FName Key;
+    if (Form == EWeaponForm::Regular)
+    {
+        Key = FName(TEXT("RHeavyEnd"));
+    }
+    else if (Form == EWeaponForm::Transformed)
+    {
+
+    }
+
+    PlayAttackAnim(Key);
+}
+
+void UWeaponInstance::ChargeEnd(EWeaponForm Form)
+{
+    FName Key;
+    if (Form == EWeaponForm::Regular)
+    {
+        Key = FName(TEXT("RChargeEnd"));
+    }
+    else if (Form == EWeaponForm::Transformed)
+    {
+
+    }
+
+    PlayAttackAnim(Key);
+}
+
+
+void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
+{
+    FName Key;
+    if (Action == EActionType::LightAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            Key = FName(TEXT("RRollLight"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+    else if (Action == EActionType::HeavyAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            Key = FName(TEXT(""));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+
+    PlayAttackAnim(Key);
 }
 
 void UWeaponInstance::ResetState()
@@ -65,22 +142,13 @@ void UWeaponInstance::ResetState()
     UE_LOG(LogTemp, Warning, TEXT("Reset worked"));
 }
 
-void USawCleaver::LightCombo()
+void UWeaponInstance::PlayAttackAnim(FName Key)
 {
-    //FName Key1 = FName(TEXT("123"));
-
-    //UAnimMontage* montage = *LoadedWeaponAnimations.Find(Key1);
-
-    //if (montage)
-    //{
-    //    CurrAnimInstance->Montage_Play(montage, 1.0f);
-    //}
+    auto AnimationData = LoadedWeaponAnimations.Find(Key);
+    if (AnimationData)
+    {
+        UAnimMontage* Montage = AnimationData->AttackMontage;
+        if (Montage)
+            CurrAnimInstance->Montage_Play(Montage, 1.0f);
+    }
 }
-
-void USawCleaver::HeavyCombo()
-{
-}
-
-//void USawCleaver::RollAttack(EActionType Action, EWeaponForm Form)
-//{
-//}

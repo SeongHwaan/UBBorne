@@ -39,7 +39,8 @@ public:
 	void StopSprint();
 
     void LightAttack();
-    void HeavyAttack();
+    void HeavyAttackStart();
+    void HeavyAttackEnd();
     void WeaponChange();
 
 private:

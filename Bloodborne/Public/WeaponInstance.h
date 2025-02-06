@@ -24,8 +24,10 @@ public:
 
     const TObjectPtr<USkeletalMesh> GetWeaponMesh();
 
-    virtual void LightCombo() {};
-    virtual void HeavyCombo() {};
+    virtual void LightCombo(EWeaponForm Form);
+    virtual void HeavyStart(EActionType Action, EWeaponForm Form);
+    virtual void HeavyEnd(EWeaponForm Form);
+    virtual void ChargeEnd(EWeaponForm Form);
     virtual void RollAttack(EActionType Action, EWeaponForm Form);
     virtual void BackstepAttack() {};
     virtual void DodgeAttack() {};
@@ -34,6 +36,7 @@ public:
     virtual void WeaponChange() {};
 
     void ResetState();
+    void PlayAttackAnim(FName Key);
 
 protected:
     // Don't think UPROPERTY() is necessary
@@ -58,16 +61,5 @@ class BLOODBORNE_API USawCleaver : public UWeaponInstance
 public:
     //HardCoding?
     USawCleaver() : UWeaponInstance(FName(TEXT("SawCleaver"))) {};
-
-    void LightCombo() override;
-    void HeavyCombo() override;
-    //void RollAttack(EActionType Action, EWeaponForm Form) override;
-    void BackstepAttack() override {};
-    void DodgeAttack() override {};
-    void JumpAttack() override {};
-    void SprintAttack() override {};
-    void WeaponChange() override {};
-
-
 };
 

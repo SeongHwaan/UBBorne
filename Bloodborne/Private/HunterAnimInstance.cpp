@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Math/Quat.h"
 #include "Animation/AnimSequence.h"
+#include "BBWeapon.h"
+#include "WeaponInstance.h"
 
 UHunterAnimInstance::UHunterAnimInstance()
 {
@@ -72,6 +74,25 @@ void UHunterAnimInstance::AnimNotify_NextAttackCheck()
 void UHunterAnimInstance::AnimNotify_AttackEnd()
 {
     OnAttackEnd.Broadcast();
+}
+
+void UHunterAnimInstance::AnimNotify_ChargeStartCheck()
+{
+    if (PCharacter->GetbIsCharging())
+        PCharacter->SetbCanQuitCharge(true);
+    else
+        PCharacter->HeavyAttackEnd();
+
+    UE_LOG(LogTemp, Warning, TEXT("ChargeStartCheck"));
+}
+
+void UHunterAnimInstance::AnimNotify_ChargeEnd()
+{
+    PCharacter->ChargeAttackEnd();
+    PCharacter->SetbCanQuitCharge(false);
+    PCharacter->SetbIsCharging(false);
+
+    UE_LOG(LogTemp, Warning, TEXT("ChargeEnd"));
 }
 
 

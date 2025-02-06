@@ -3,7 +3,7 @@
 
 #include "ResourceManager.h"
 
-void UResourceManager::Initialize(UAnimInstance* InAnimInstance, UDataTable* InDataTable)
+void UResourceManager::DoInitialize(UAnimInstance* InAnimInstance, UDataTable* InDataTable)
 {
     AnimInstance = InAnimInstance;
     WeaponDataTable = InDataTable;

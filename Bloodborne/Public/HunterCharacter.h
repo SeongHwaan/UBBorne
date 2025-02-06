@@ -215,14 +215,20 @@ public:
     void SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, FName WeaponName);
     void SetLeftWeapon(TObjectPtr<class ABBWeapon*>&, FName WeaponName);
 
+    class ABBWeapon* GetRightWeapon();
+
     const EActionType GetActionType();
     const EWeaponForm GetWeaponForm();
     //RemoveWeapon()
 
+    const bool GetbIsCharging();
+    void SetbIsCharging(bool input);
+
+    const bool GetbCanQuitCharge();
+    void SetbCanQuitCharge(bool input);
+
 
 private:
-    
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class UResourceManager> ResourceManager;
 
@@ -241,6 +247,9 @@ private:
     TObjectPtr<class ABBWeapon> RWeapon1;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class ABBWeapon> RWeapon2;
+    
+    bool bIsCharging = false;
+    bool bCanQuitCharge = false;
 
 
 
@@ -284,6 +293,9 @@ public:
     void HeavyAttack();
     void WeaponChange();
     //void AttackCheck();
+
+    void HeavyAttackEnd();
+    void ChargeAttackEnd();
 
     UFUNCTION()
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);

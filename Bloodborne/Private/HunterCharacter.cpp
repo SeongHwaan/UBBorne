@@ -106,9 +106,14 @@ void AHunterCharacter::PostInitializeComponents()
             //HAnim->JumpToLightShortAttackMontageSection(CurrentCombo);
         }
         });
+    if (GetGameInstance() == nullptr)
+    {
+        UE_LOG(LogTemp, Error, TEXT("GameInstance is null in PostInitializeComponents."));
+        return;
+    }
 
-    ResourceManager = GetGameInstance()->GetSubsystem<UResourceManager>();
-    ResourceManager->Initialize(HAnim, WeaponDataTable);
+    ResourceManager = GetWorld()->GetGameInstance()->GetSubsystem<UResourceManager>();
+    ResourceManager->DoInitialize(HAnim, WeaponDataTable);
 }
 
 void AHunterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -392,6 +397,11 @@ void AHunterCharacter::SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, 
     RightWeapon = NewWeapon;
 }
 
+ABBWeapon* AHunterCharacter::GetRightWeapon()
+{
+    return CurrentRWeapon;
+}
+
 const EActionType AHunterCharacter::GetActionType()
 {
     return ECurrentActionType;
@@ -400,6 +410,26 @@ const EActionType AHunterCharacter::GetActionType()
 const EWeaponForm AHunterCharacter::GetWeaponForm()
 {
     return ECurrentWeaponForm;
+}
+
+const bool AHunterCharacter::GetbIsCharging()
+{
+    return bIsCharging;
+}
+
+void AHunterCharacter::SetbIsCharging(bool input)
+{
+    bIsCharging = input;
+}
+
+const bool AHunterCharacter::GetbCanQuitCharge()
+{
+    return bCanQuitCharge;
+}
+
+void AHunterCharacter::SetbCanQuitCharge(bool input)
+{
+    bCanQuitCharge = input;
 }
 
 void AHunterCharacter::LightAttack()
@@ -418,6 +448,22 @@ void AHunterCharacter::WeaponChange()
 {
     ECurrentActionType = EActionType::WeaponChange;
     CurrentMovementState->HandleAction(this);
+}
+
+void AHunterCharacter::HeavyAttackEnd()
+{
+    auto Instance = CurrentRWeapon->GetWeaponInstance();
+    auto Form = GetWeaponForm();
+
+    Instance->HeavyEnd(Form);
+}
+
+void AHunterCharacter::ChargeAttackEnd()
+{
+    auto Instance = CurrentRWeapon->GetWeaponInstance();
+    auto Form = GetWeaponForm();
+
+    Instance->ChargeEnd(Form);
 }
 
 void AHunterCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -444,17 +490,20 @@ void AHunterCharacter::NoneState::Move(AHunterCharacter* Chr)
 {
     Chr->targetSpeed = 0.0f;
 }
-//switch 방식이 확장성은 좋으나 너무 상태별로 함수를 많이 만들어야 하기에 가독성이 떨어지고 불편
+//switch 방식이 확장성은 좋으나 상태별로 함수를 많이 만들어야 하기에 가독성이 떨어지고 불편
 //차라리 무기 상태나 공격 상태를 넘겨 if문으로 알아서 처리하도록
 void AHunterCharacter::NoneState::HandleAction(AHunterCharacter* Chr)
 {
     auto Instance = Chr->CurrentRWeapon->GetWeaponInstance();
     auto Action = Chr->GetActionType();
-    switch (Action) {
+    auto Form = Chr->GetWeaponForm();
+    
+    switch (Action) 
+    {
     case EActionType::LightAttack:
-        //Instance->LightCombo();
         break;
     case EActionType::HeavyAttack:
+        Instance->HeavyStart(Action, Form);
         break;
     case EActionType::WeaponChange:
         break;
@@ -495,19 +544,6 @@ void AHunterCharacter::RollState::HandleAction(AHunterCharacter* Chr)
     auto Form = Chr->GetWeaponForm();
 
     Instance->RollAttack(Action, Form);
-    //switch (Action) 
-    //{
-    //case EActionType::LightAttack:
-    //    //Use weapon state later
-    //    Instance->LightCombo();
-    //    break;
-    //case EActionType::HeavyAttack:
-    //    break;
-    //case EActionType::WeaponChange:
-    //    break;
-    //case EActionType::LeftAttack:
-    //    break;
-    //}
 }
 
 void AHunterCharacter::DodgeState::HandleAction(AHunterCharacter* Chr)

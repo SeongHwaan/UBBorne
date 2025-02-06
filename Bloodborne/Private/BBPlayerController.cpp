@@ -53,6 +53,9 @@ void ABBPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ABBPlayerController::StopSprint);
 
         EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &ABBPlayerController::LightAttack);
+        EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Started, this, &ABBPlayerController::HeavyAttackStart);
+        EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Completed, this, &ABBPlayerController::HeavyAttackEnd);
+        EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Started, this, &ABBPlayerController::WeaponChange);
 
 	}
 }
@@ -132,9 +135,23 @@ void ABBPlayerController::LightAttack()
     BBCharacter->LightAttack();
 }
 
-void ABBPlayerController::HeavyAttack()
+void ABBPlayerController::HeavyAttackStart()
 {
+    BBCharacter->SetbIsCharging(true);
     BBCharacter->HeavyAttack();
+}
+
+void ABBPlayerController::HeavyAttackEnd()
+{
+    BBCharacter->SetbIsCharging(false);
+
+    if (BBCharacter->GetbCanQuitCharge())
+    {
+        BBCharacter->SetbCanQuitCharge(false);
+        BBCharacter->HeavyAttackEnd();
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("Released"));
 }
 
 void ABBPlayerController::WeaponChange()

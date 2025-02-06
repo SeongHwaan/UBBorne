@@ -81,7 +81,6 @@ public:
 
 private:
 
-
     UFUNCTION()
     void AnimNotify_AttackHitCheck();
 
@@ -90,4 +89,10 @@ private:
 
     UFUNCTION()
     void AnimNotify_AttackEnd();
+
+    UFUNCTION()
+    void AnimNotify_ChargeStartCheck();
+
+    UFUNCTION()
+    void AnimNotify_ChargeEnd();
 };
