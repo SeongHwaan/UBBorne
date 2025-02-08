@@ -22,7 +22,7 @@ public:
 
     // Make it after Inventory
     // void SwitchWeapon():
-
+    
     TObjectPtr<class UWeaponInstance> LoadRWeapon(FName WeaponName);
     TObjectPtr<class UWeaponInstance> LoadLWeapon(FName WeaponName);
 
@@ -30,4 +30,8 @@ private:
     
     TMap<FName, TSubclassOf<UWeaponInstance>> RightWeaponClassMap;
     TMap<FName, TSubclassOf<UWeaponInstance>> LeftWeaponClassMap;
+
+    //TWeakObjectPtr?
+    TObjectPtr<class UWeaponInstance> RWeapon;
+    TObjectPtr<class UWeaponInstance> LWeapon;
 };

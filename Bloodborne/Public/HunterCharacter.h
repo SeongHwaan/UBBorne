@@ -24,6 +24,7 @@ enum class EMovementState : uint8
 UENUM(BlueprintType)
 enum class EActionType : uint8
 {
+    None UMETA(DisplayName = "None"),
     LightAttack UMETA(DisplayName = "LightAttack"),
     HeavyAttack UMETA(DisplayName = "HeavyAttack"),
     WeaponChange UMETA(DisplayName = "WeaponChange"),
@@ -66,7 +67,7 @@ private:
     TObjectPtr<class UCameraComponent> Camera;
 
     UPROPERTY()
-    TObjectPtr<class UHunterAnimInstance> HAnim;
+    TObjectPtr<class UHunterAnimInstance> Anim;
 
 //Normal / Movement
 public:
@@ -80,11 +81,22 @@ public:
     void Dodging();
     void StopDodging();
 
-    bool GetHasMovementInput();
-    bool GetIsSprinting();
-    bool GetIsDodging();
+    // 입력 버퍼 저장 (비어있을 때만 저장)
+    void AddBufferAction(EActionType NewAction);
+    // 버퍼 실행 후 초기화
+    void ConsumeBufferedAction();
+
+    bool GetHasMovementInput() const;
+    bool GetIsSprinting() const;
+    bool GetIsDodging() const;
     float GetDirectionAngle();
 
+    bool GetbCanInput() const;
+    bool GetbCanNextAction() const;
+    void SetbCanInput(bool input);
+    void SetbCanNextAction(bool input);
+
+    //private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FVector2D InputDirection = FVector2D::ZeroVector;
 
@@ -104,13 +116,19 @@ public:
     bool bIsDodging = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool bCanAction = false;
+    bool bCanInput = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    bool bCanNextAction = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float MovementDirectionAngle = 0.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float targetSpeed = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    EActionType BufferedAction = EActionType::None;
 
 private:
     float PreviousInputIntensity = 0.0f;
@@ -142,7 +160,7 @@ public:
     EMovementState GetMovementState();
     void SetMovementState(EMovementState State);
 
-   // EActionType GetActionType() const;
+    //EActionType GetActionType() const;
     //void SetActionType(EActionType Action);
 
 private:
@@ -151,6 +169,7 @@ private:
     public:
         virtual void Move(AHunterCharacter* Chr) {};
         virtual void HandleAction(AHunterCharacter* Chr) = 0;
+        void NormalAction(AHunterCharacter* Chr);
 
         virtual ~MovementState() = default;
     };
@@ -217,21 +236,20 @@ public:
 
     class ABBWeapon* GetRightWeapon();
 
-    const EActionType GetActionType();
-    const EWeaponForm GetWeaponForm();
+    UDataTable* GetWeaponDataTable() const;
+
+    EActionType GetActionType() const;
+    EWeaponForm GetWeaponForm() const;
     //RemoveWeapon()
 
-    const bool GetbIsCharging();
+    bool GetbIsCharging() const;
     void SetbIsCharging(bool input);
 
-    const bool GetbCanQuitCharge();
+    bool GetbCanQuitCharge() const;
     void SetbCanQuitCharge(bool input);
 
 
 private:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-    TObjectPtr<class UResourceManager> ResourceManager;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     UDataTable* WeaponDataTable;
 
@@ -298,23 +316,12 @@ public:
     void ChargeAttackEnd();
 
     UFUNCTION()
-    void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-    void AttackStartComboState();
-    void AttackEndComboState();
+    void OnMontageStarted(UAnimMontage* Montage);
 
 private:
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
     bool IsAttacking = false;
 
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
-    bool CanNextCombo = true;
-
-    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
     bool IsComboInputOn = false;
-
-    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
-    int32 CurrentCombo = 0;
-
-    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
-    int32 MaxCombo = 5;
 };

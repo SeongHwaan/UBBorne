@@ -61,6 +61,15 @@ void UHunterAnimInstance::PlayBackstepMontage()
     Montage_Play(Backstep, 1.0f);
 }
 
+
+
+
+
+void UHunterAnimInstance::AnimNotify_CanInput()
+{
+    OnCanInput.Broadcast();
+}
+
 void UHunterAnimInstance::AnimNotify_AttackHitCheck()
 {
     OnAttackHitCheck.Broadcast();
@@ -78,21 +87,12 @@ void UHunterAnimInstance::AnimNotify_AttackEnd()
 
 void UHunterAnimInstance::AnimNotify_ChargeStartCheck()
 {
-    if (PCharacter->GetbIsCharging())
-        PCharacter->SetbCanQuitCharge(true);
-    else
-        PCharacter->HeavyAttackEnd();
-
-    UE_LOG(LogTemp, Warning, TEXT("ChargeStartCheck"));
+    OnChargeStartCheck.Broadcast();
 }
 
 void UHunterAnimInstance::AnimNotify_ChargeEnd()
 {
-    PCharacter->ChargeAttackEnd();
-    PCharacter->SetbCanQuitCharge(false);
-    PCharacter->SetbIsCharging(false);
-
-    UE_LOG(LogTemp, Warning, TEXT("ChargeEnd"));
+    OnChargeEnd.Broadcast();
 }
 
 

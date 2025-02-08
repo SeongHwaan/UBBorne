@@ -62,8 +62,11 @@ void ABBPlayerController::SetupInputComponent()
 
 void ABBPlayerController::Move(const FInputActionValue& Value)
 {
-	const FVector2D MovementVector = Value.Get<FVector2D>();
-	BBCharacter->Move(MovementVector);
+    if (BBCharacter->GetbCanNextAction())
+    {
+        const FVector2D MovementVector = Value.Get<FVector2D>();
+        BBCharacter->Move(MovementVector);
+    }
 }
 
 void ABBPlayerController::MoveEnd()
@@ -132,19 +135,41 @@ void ABBPlayerController::StopSprint()
 
 void ABBPlayerController::LightAttack()
 {
-    BBCharacter->LightAttack();
+    if (BBCharacter->GetbCanInput() && !BBCharacter->GetbCanNextAction())
+    {
+        BBCharacter->AddBufferAction(EActionType::LightAttack);
+        return;
+    }
+    if (BBCharacter->GetbCanNextAction())
+    {
+        BBCharacter->ConsumeBufferedAction();
+        BBCharacter->LightAttack();
+        return;
+    }
 }
 
 void ABBPlayerController::HeavyAttackStart()
 {
     BBCharacter->SetbIsCharging(true);
-    BBCharacter->HeavyAttack();
+
+    if (BBCharacter->GetbCanInput() && !BBCharacter->GetbCanNextAction())
+    {
+        BBCharacter->AddBufferAction(EActionType::HeavyAttack);
+        return;
+    }
+    if (BBCharacter->GetbCanNextAction())
+    {
+        BBCharacter->ConsumeBufferedAction();
+        BBCharacter->HeavyAttack();
+        return;
+    }
 }
 
 void ABBPlayerController::HeavyAttackEnd()
 {
     BBCharacter->SetbIsCharging(false);
 
+    //OnChargeStartCheck에서 IsCharging이 true인 경우 진입 가능
     if (BBCharacter->GetbCanQuitCharge())
     {
         BBCharacter->SetbCanQuitCharge(false);

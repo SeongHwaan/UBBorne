@@ -17,15 +17,16 @@ class BLOODBORNE_API UWeaponInstance : public UObject
 	GENERATED_BODY()
 
 public:
-    UWeaponInstance() {};
-    UWeaponInstance(FName Name);
+    UWeaponInstance();
 
-    void InitializeWeapon();
+    void InitializeWeapon(FName RowName);
 
     const TObjectPtr<USkeletalMesh> GetWeaponMesh();
 
+    void SetAttackIndex(int input);
+
     virtual void LightCombo(EWeaponForm Form);
-    virtual void HeavyStart(EActionType Action, EWeaponForm Form);
+    virtual void HeavyStart(EWeaponForm Form);
     virtual void HeavyEnd(EWeaponForm Form);
     virtual void ChargeEnd(EWeaponForm Form);
     virtual void RollAttack(EActionType Action, EWeaponForm Form);
@@ -60,6 +61,6 @@ class BLOODBORNE_API USawCleaver : public UWeaponInstance
 
 public:
     //HardCoding?
-    USawCleaver() : UWeaponInstance(FName(TEXT("SawCleaver"))) {};
+    USawCleaver() : UWeaponInstance() {};
 };
 

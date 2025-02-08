@@ -9,7 +9,10 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnNextAttatckCheckDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnAttackHitCheckDelegate);
-DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnChargeStartCheckDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnChargeEndedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnCanInputDelegate);
 
 UCLASS()
 class BLOODBORNE_API UHunterAnimInstance : public UAnimInstance
@@ -75,17 +78,23 @@ private:
     TObjectPtr<UAnimMontage> Backstep;
 
 public:
+    FOnCanInputDelegate OnCanInput;
     FOnNextAttatckCheckDelegate OnNextActionCheck;
     FOnAttackHitCheckDelegate OnAttackHitCheck;
-    FOnAttackEndDelegate OnAttackEnd;
+    FOnAttackEndedDelegate OnAttackEnd;
+    FOnChargeStartCheckDelegate OnChargeStartCheck;
+    FOnChargeEndedDelegate OnChargeEnd;
 
 private:
 
     UFUNCTION()
-    void AnimNotify_AttackHitCheck();
+    void AnimNotify_CanInput();
 
     UFUNCTION()
     void AnimNotify_NextAttackCheck();
+
+    UFUNCTION()
+    void AnimNotify_AttackHitCheck();
 
     UFUNCTION()
     void AnimNotify_AttackEnd();
@@ -95,4 +104,5 @@ private:
 
     UFUNCTION()
     void AnimNotify_ChargeEnd();
+
 };

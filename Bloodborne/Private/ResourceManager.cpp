@@ -9,12 +9,12 @@ void UResourceManager::DoInitialize(UAnimInstance* InAnimInstance, UDataTable* I
     WeaponDataTable = InDataTable;
 }
 
-const TObjectPtr<UDataTable> UResourceManager::GetWeaponDataTable()
+TObjectPtr<UDataTable> UResourceManager::GetWeaponDataTable() const
 {
     return WeaponDataTable;
 }
 
-const TObjectPtr<UAnimInstance> UResourceManager::GetAnimInstance()
+TObjectPtr<UAnimInstance> UResourceManager::GetAnimInstance() const
 {
     return AnimInstance;
 }

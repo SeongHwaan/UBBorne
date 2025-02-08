@@ -5,12 +5,16 @@
 #include "HunterAnimInstance.h"
 #include "ResourceManager.h"
 
-UWeaponInstance::UWeaponInstance(FName RowName)
+UWeaponInstance::UWeaponInstance()
 {
     AttackIndex = 1;
     bIsRight = true;
-    WeaponName = RowName;
+    WeaponData = nullptr;
+}
 
+void UWeaponInstance::InitializeWeapon(FName RowName)
+{
+    WeaponName = RowName;
     if (UWorld* World = GetWorld())
     {
         ResourceManager = World->GetGameInstance()->GetSubsystem<UResourceManager>();
@@ -23,16 +27,12 @@ UWeaponInstance::UWeaponInstance(FName RowName)
         }
         else
             UE_LOG(LogTemp, Warning, TEXT("Instance DataTable error"));
-
-        CurrAnimInstance = ResourceManager->GetAnimInstance();
     }
-}
 
-void UWeaponInstance::InitializeWeapon()
-{
+    CurrAnimInstance = ResourceManager->GetAnimInstance();
     // Delegate in PostInitializeComponents or BeginPlay rather than a constructor.
-    //auto Anim = Cast<UHunterAnimInstance>(CurrAnimInstance);
-    //Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
+    auto Anim = Cast<UHunterAnimInstance>(CurrAnimInstance);
+    Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
 }
 
 const TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh()
@@ -40,38 +40,62 @@ const TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh()
     return WeaponMesh;
 }
 
+void UWeaponInstance::SetAttackIndex(int input)
+{
+    AttackIndex = input;
+}
+
 void UWeaponInstance::LightCombo(EWeaponForm Form)
 {
     FName Key;
     if (Form == EWeaponForm::Regular)
     {
-        
+        switch (AttackIndex)
+        {
+        case 1:
+            Key = FName(TEXT("RLightComboStart"));
+            AttackIndex++;
+            break;
+        case 2:
+            Key = FName(TEXT("RLightCombo1"));
+            AttackIndex++;
+            break;
+        case 3:
+            Key = FName(TEXT("RLightCombo2"));
+            AttackIndex++;
+            break;
+        case 4:
+            Key = FName(TEXT("RLightCombo3"));
+            AttackIndex++;
+            break;
+        case 5:
+            Key = FName(TEXT("RLightCombo4"));
+            AttackIndex = 2;
+            break;
+        }
     }
-        
-    else if (Form == EWeaponForm::Transformed)    
+
+    else if (Form == EWeaponForm::Transformed)
     {
-
-
     }
 
     PlayAttackAnim(Key);
 }
 
-void UWeaponInstance::HeavyStart(EActionType Action, EWeaponForm Form)
+void UWeaponInstance::HeavyStart(EWeaponForm Form)
 {
     //CanDoNextAction을 애님 시작 전에 체크
     FName Key;
-    if (Action == EActionType::HeavyAttack)
-    {
-        if (Form == EWeaponForm::Regular)
-        {
-            Key = FName(TEXT("RHeavyStart"));
-        }
-        else if (Form == EWeaponForm::Transformed)
-        {
 
-        }
+    if (Form == EWeaponForm::Regular)
+    {
+        Key = FName(TEXT("RHeavyStart"));
     }
+    else if (Form == EWeaponForm::Transformed)
+    {
+
+    }
+
 
     PlayAttackAnim(Key);
 }

@@ -16,15 +16,33 @@ TObjectPtr<class UWeaponInstance> UWeaponManager::LoadRWeapon(FName WeaponName)
 {
     //Make Exception Later
     auto WeaponClass = UWeaponManager::RightWeaponClassMap.Find(WeaponName);
-    auto RWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
-    RWeapon->InitializeWeapon();
+    if (!WeaponClass || !*WeaponClass)
+    {
+        return nullptr; 
+    }
+    if (RWeapon)
+    {
+        RWeapon->ConditionalBeginDestroy();  
+        RWeapon = nullptr;
+    }
+    RWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
+    RWeapon->InitializeWeapon(WeaponName);
     return RWeapon;
 }
 
 TObjectPtr<class UWeaponInstance> UWeaponManager::LoadLWeapon(FName WeaponName)
 {
     auto WeaponClass = UWeaponManager::LeftWeaponClassMap.Find(WeaponName);
-    auto LWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
+    if (!WeaponClass || !*WeaponClass)
+    {
+        return nullptr; 
+    }
+    if (LWeapon)
+    {
+        LWeapon->ConditionalBeginDestroy();
+        LWeapon = nullptr;
+    }
+    LWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
     return LWeapon;
 }
 

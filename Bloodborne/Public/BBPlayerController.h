@@ -44,6 +44,7 @@ public:
     void WeaponChange();
 
 private:
+
 	UPROPERTY(EditDefaultsOnly, Category = "EnhancedInput")
 	TObjectPtr<class UInputMappingContext> DefaultContext;
 
@@ -76,5 +77,5 @@ private:
 	UPROPERTY()
 	TObjectPtr<class AHunterCharacter> BBCharacter;
 
-    UEnhancedInputComponent* EnhancedInputComponent;
+    class UEnhancedInputComponent* EnhancedInputComponent;
 };
