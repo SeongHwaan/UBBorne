@@ -22,6 +22,8 @@ public:
 
     void SetResourceManager(class AHunterCharacter* Character);
 
+    class UResourceManager* GetResourceManager() const;
+
 private:
     UPROPERTY()
     class UResourceManager* ResourceManager;

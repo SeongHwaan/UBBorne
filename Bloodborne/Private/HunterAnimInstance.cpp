@@ -23,7 +23,7 @@ void UHunterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	PCharacter = Cast<AHunterCharacter>(Pawn);
 
-	HasMovementInput = PCharacter->GetHasMovementInput();
+	HasMovementInput = PCharacter->GetbHasMovementInput();
 	IsLockOn = PCharacter->GetIsLockOn();
 
     MovementDirectionAngle = PCharacter->GetDirectionAngle();
@@ -32,7 +32,7 @@ void UHunterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UHunterAnimInstance::PlayLockOnDodgeMontage()
 {
-    const float angle = MovementDirectionAngle;
+    float angle = PCharacter->GetDirectionAngle();
     if (FMath::Abs(angle) <= 22.5)
         Montage_Play(Forward, 1.0f);
     else if (22.5 < angle && angle <= 67.5)
@@ -64,7 +64,6 @@ void UHunterAnimInstance::PlayBackstepMontage()
 
 
 
-
 void UHunterAnimInstance::AnimNotify_CanInput()
 {
     OnCanInput.Broadcast();
@@ -75,7 +74,7 @@ void UHunterAnimInstance::AnimNotify_AttackHitCheck()
     OnAttackHitCheck.Broadcast();
 }
 
-void UHunterAnimInstance::AnimNotify_NextAttackCheck()
+void UHunterAnimInstance::AnimNotify_NextActionCheck()
 {
     OnNextActionCheck.Broadcast();
 }

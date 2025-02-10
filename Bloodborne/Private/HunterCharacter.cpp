@@ -62,28 +62,16 @@ void AHunterCharacter::BeginPlay()
     {
         //Set ResourceManager
         GameInstance->SetResourceManager(this);
-        UE_LOG(LogTemp, Log, TEXT("Character registered in GameInstance"));
+        SetRightWeapon(RWeapon1, TEXT("SawCleaver"));
+        CurrentRWeapon = RWeapon1;
     }
-
-    SetRightWeapon(RWeapon1, TEXT("SawCleaver"));
-    CurrentRWeapon = RWeapon1;
+    else
+        return;
 }
 
 void AHunterCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    if (!InputDirection.IsNearlyZero())
-    {
-        bHasMovementInput = true;
-    }
-    else
-    {
-        bHasMovementInput = false;
-        LastChangeCheckTime = GetWorld()->GetTimeSeconds();
-        //Modify this
-        //SetMovementState(EMovementState::None);
-    }
 
     if (TargetPawn != nullptr)
     {
@@ -106,23 +94,19 @@ void AHunterCharacter::PostInitializeComponents()
     Anim = Cast<UHunterAnimInstance>(GetMesh()->GetAnimInstance());
 
     Anim->OnMontageStarted.AddDynamic(this, &AHunterCharacter::OnMontageStarted);
+    Anim->OnMontageEnded.AddDynamic(this, &AHunterCharacter::OnMontageEnded);
     
     Anim->OnCanInput.AddLambda([this]() -> void {
         bCanInput = true;
         });
     Anim->OnNextActionCheck.AddLambda([this]() -> void {
-        if (BufferedAction != EActionType::None)
+        if (this->HasBufferedAction())
         {
-            ECurrentActionType = BufferedAction;
-            ConsumeBufferedAction();
-            CurrentMovementState->HandleAction(this);
+            BufferedAction();
+            BufferedAction = nullptr;
         }
         else
             bCanNextAction = true;
-        });
-    Anim->OnAttackEnd.AddLambda([this]() -> void {
-        bCanInput = true;
-        bCanNextAction = true;
         });
     Anim->OnChargeStartCheck.AddLambda([this]() -> void {
         if (bIsCharging)
@@ -154,18 +138,6 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     const FRotator Rotation = GetControlRotation();
     const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-    const FVector VelocityDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * InputDirection.Y + FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * InputDirection.X;
-    const FVector ForwardDirection = GetActorForwardVector();
-    const double Cos = ForwardDirection.Dot(VelocityDirection);
-    const double Radian = FMath::Acos(Cos);
-    const float Degree = FMath::RadiansToDegrees(Radian);
-    const FVector Cross = FVector::CrossProduct(ForwardDirection, VelocityDirection);
-   
-    if (Cross.Z >= 0.0f)
-        MovementDirectionAngle = Degree;
-    else
-        MovementDirectionAngle = -Degree;
-
     InputIntensity = Vector.Size();
     targetSpeed = 0.0f;
 
@@ -191,7 +163,6 @@ void AHunterCharacter::Move(const FVector2D& Vector)
 
     if (Anim->IsAnyMontagePlaying())
     {
-        Anim->OnAttackEnd.Broadcast();
         Anim->Montage_Stop(0.3f);
     }
 
@@ -210,6 +181,8 @@ void AHunterCharacter::Move(const FVector2D& Vector)
 void AHunterCharacter::MoveEnd()
 {
     InputDirection = FVector2D::ZeroVector;
+    bHasMovementInput = false;
+    //MovementDirectionAngle = 0.0f;
 }
 
 void AHunterCharacter::Look(const FVector2D& Vector)
@@ -225,7 +198,7 @@ void AHunterCharacter::Look(const FVector2D& Vector)
     }
 }
 
-void AHunterCharacter::Sprinting()
+void AHunterCharacter::Sprint()
 {
     bIsSprinting = true;
     this->LockOff();
@@ -236,27 +209,27 @@ void AHunterCharacter::StopSprinting()
     bIsSprinting = false;
 }
 
-void AHunterCharacter::Dodging()
+void AHunterCharacter::Dodge()
 {
     bIsDodging = true;
 
     if (!bHasMovementInput)
     {
-        Anim->PlayBackstepMontage();
         ECurrentMovementState = EMovementState::Backstep;
         SetMovementState(ECurrentMovementState);
+        Anim->PlayBackstepMontage();
     }
     else if (bIsLockOn)
     {
-        Anim->PlayLockOnDodgeMontage();
         ECurrentMovementState = EMovementState::Dodge;
         SetMovementState(ECurrentMovementState);
+        Anim->PlayLockOnDodgeMontage();
     }
     else
     {
-        Anim->PlayRollMontage();
         ECurrentMovementState = EMovementState::Roll;
         SetMovementState(ECurrentMovementState);
+        Anim->PlayRollMontage();
     }
 }
 
@@ -265,27 +238,20 @@ void AHunterCharacter::StopDodging()
     bIsDodging = false;
 }
 
-
-void AHunterCharacter::AddBufferAction(EActionType NewAction)
+bool AHunterCharacter::HasBufferedAction() const
 {
-    if (BufferedAction == EActionType::None)
-    {
-        BufferedAction = NewAction;
-    }
-}
-
-void AHunterCharacter::ConsumeBufferedAction()
-{
-    if (BufferedAction != EActionType::None)
-    {
-        BufferedAction = EActionType::None;
-    }
+    return static_cast<bool>(BufferedAction);
 }
 
 
-bool AHunterCharacter::GetHasMovementInput() const
+bool AHunterCharacter::GetbHasMovementInput() const
 {
     return bHasMovementInput;
+}
+
+void AHunterCharacter::SetbHasMovementInput(bool input)
+{
+    bHasMovementInput = input;
 }
 
 bool AHunterCharacter::GetIsSprinting() const
@@ -301,6 +267,30 @@ bool AHunterCharacter::GetIsDodging() const
 float AHunterCharacter::GetDirectionAngle()
 {
     return MovementDirectionAngle;
+}
+
+void AHunterCharacter::SetDirectionAngle(FVector2D Vector)
+{
+    auto DirectionVector = Vector;
+    DirectionVector.Normalize();
+
+    const FRotator Rotation = GetControlRotation();
+    const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+    const FVector VelocityDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * DirectionVector.Y + 
+        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * DirectionVector.X;
+    const FVector ForwardDirection = GetActorForwardVector();
+    const double Cos = ForwardDirection.Dot(VelocityDirection);
+    const double Radian = FMath::Acos(Cos);
+    const float Degree = FMath::RadiansToDegrees(Radian);
+    const FVector Cross = FVector::CrossProduct(ForwardDirection, VelocityDirection);
+
+    if (Cross.Z >= 0.0f)
+        MovementDirectionAngle = Degree;
+    else
+        MovementDirectionAngle = -Degree;
+
+    UE_LOG(LogTemp, Warning, TEXT("Angle: %f"), MovementDirectionAngle);
 }
 
 bool AHunterCharacter::GetbCanInput() const
@@ -538,21 +528,12 @@ void AHunterCharacter::OnMontageStarted(UAnimMontage* Montage)
 {
     bCanInput = false;
     bCanNextAction = false;
+    UE_LOG(LogTemp, Warning, TEXT("MontageStarted"));
 }
 
-//void AHunterCharacter::AttackStartComboState()
-//{
-//    CanNextCombo = true;
-//    IsComboInputOn = false;
-//    CurrentCombo = FMath::Clamp<int32>(CurrentCombo + 1, 1, MaxCombo);
-//}
-//
-//void AHunterCharacter::AttackEndComboState()
-//{
-//    IsComboInputOn = false;
-//    CanNextCombo = false;
-//    CurrentCombo = 0;
-//}
+void AHunterCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+}
 
 void AHunterCharacter::NoneState::Move(AHunterCharacter* Chr)
 {
@@ -595,6 +576,7 @@ void AHunterCharacter::SprintState::Move(AHunterCharacter* Chr)
 
 void AHunterCharacter::SprintState::HandleAction(AHunterCharacter* Chr)
 {
+
 }
 
 void AHunterCharacter::RollState::HandleAction(AHunterCharacter* Chr)
@@ -615,6 +597,27 @@ void AHunterCharacter::BackstepState::HandleAction(AHunterCharacter* Chr)
 {
 }
 
+void AHunterCharacter::MovementState::NormalAction(AHunterCharacter* Chr)
+{
+    auto Instance = Chr->CurrentRWeapon->GetWeaponInstance();
+    auto Action = Chr->GetActionType();
+    auto Form = Chr->GetWeaponForm();
+
+    switch (Action)
+    {
+    case EActionType::LightAttack:
+        Instance->LightCombo(Form);
+        break;
+    case EActionType::HeavyAttack:
+        Instance->HeavyStart(Form);
+        break;
+    case EActionType::WeaponChange:
+        break;
+    }
+}
+
+
+
 
 //void AHunterCharacter::SawCleaverState::LightAttack(AHunterCharacter* Chr)
 //{
@@ -634,22 +637,3 @@ void AHunterCharacter::BackstepState::HandleAction(AHunterCharacter* Chr)
 //        Chr->IsAttacking = true;
 //    }
 //}
-
-void AHunterCharacter::MovementState::NormalAction(AHunterCharacter* Chr)
-{
-    auto Instance = Chr->CurrentRWeapon->GetWeaponInstance();
-    auto Action = Chr->GetActionType();
-    auto Form = Chr->GetWeaponForm();
-
-    switch (Action)
-    {
-    case EActionType::LightAttack:
-        Instance->LightCombo(Form);
-        break;
-    case EActionType::HeavyAttack:
-        Instance->HeavyStart(Form);
-        break;
-    case EActionType::WeaponChange:
-        break;
-    }
-}

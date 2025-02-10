@@ -4,6 +4,7 @@
 #include "WeaponInstance.h"
 #include "HunterAnimInstance.h"
 #include "ResourceManager.h"
+#include "BBGameInstance.h"
 
 UWeaponInstance::UWeaponInstance()
 {
@@ -17,7 +18,8 @@ void UWeaponInstance::InitializeWeapon(FName RowName)
     WeaponName = RowName;
     if (UWorld* World = GetWorld())
     {
-        ResourceManager = World->GetGameInstance()->GetSubsystem<UResourceManager>();
+        UBBGameInstance* MyGameInstance = Cast<UBBGameInstance>(World->GetGameInstance());
+        ResourceManager = MyGameInstance->GetResourceManager();
         WeaponDataTable = ResourceManager->GetWeaponDataTable();
         if (WeaponDataTable)
         {
@@ -25,11 +27,9 @@ void UWeaponInstance::InitializeWeapon(FName RowName)
             LoadedWeaponAnimations = WeaponData->AnimationData;
             WeaponMesh = WeaponData->WeaponMesh;
         }
-        else
-            UE_LOG(LogTemp, Warning, TEXT("Instance DataTable error"));
+        CurrAnimInstance = ResourceManager->GetAnimInstance();
     }
 
-    CurrAnimInstance = ResourceManager->GetAnimInstance();
     // Delegate in PostInitializeComponents or BeginPlay rather than a constructor.
     auto Anim = Cast<UHunterAnimInstance>(CurrAnimInstance);
     Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
@@ -45,31 +45,31 @@ void UWeaponInstance::SetAttackIndex(int input)
     AttackIndex = input;
 }
 
+
 void UWeaponInstance::LightCombo(EWeaponForm Form)
 {
-    FName Key;
     if (Form == EWeaponForm::Regular)
     {
         switch (AttackIndex)
         {
         case 1:
-            Key = FName(TEXT("RLightComboStart"));
+            MontageName = FName(TEXT("RLightComboStart"));
             AttackIndex++;
             break;
         case 2:
-            Key = FName(TEXT("RLightCombo1"));
+            MontageName = FName(TEXT("RLightCombo1"));
             AttackIndex++;
             break;
         case 3:
-            Key = FName(TEXT("RLightCombo2"));
+            MontageName = FName(TEXT("RLightCombo2"));
             AttackIndex++;
             break;
         case 4:
-            Key = FName(TEXT("RLightCombo3"));
+            MontageName = FName(TEXT("RLightCombo3"));
             AttackIndex++;
             break;
         case 5:
-            Key = FName(TEXT("RLightCombo4"));
+            MontageName = FName(TEXT("RLightCombo4"));
             AttackIndex = 2;
             break;
         }
@@ -79,17 +79,15 @@ void UWeaponInstance::LightCombo(EWeaponForm Form)
     {
     }
 
-    PlayAttackAnim(Key);
+    PlayAttackAnim(MontageName);
 }
 
 void UWeaponInstance::HeavyStart(EWeaponForm Form)
 {
     //CanDoNextAction을 애님 시작 전에 체크
-    FName Key;
-
     if (Form == EWeaponForm::Regular)
     {
-        Key = FName(TEXT("RHeavyStart"));
+        MontageName = FName(TEXT("RHeavyStart"));
     }
     else if (Form == EWeaponForm::Transformed)
     {
@@ -97,48 +95,45 @@ void UWeaponInstance::HeavyStart(EWeaponForm Form)
     }
 
 
-    PlayAttackAnim(Key);
+    PlayAttackAnim(MontageName);
 }
 
 void UWeaponInstance::HeavyEnd(EWeaponForm Form)
 {
-    FName Key;
     if (Form == EWeaponForm::Regular)
     {
-        Key = FName(TEXT("RHeavyEnd"));
+        MontageName = FName(TEXT("RHeavyEnd"));
     }
     else if (Form == EWeaponForm::Transformed)
     {
 
     }
 
-    PlayAttackAnim(Key);
+    PlayAttackAnim(MontageName);
 }
 
 void UWeaponInstance::ChargeEnd(EWeaponForm Form)
 {
-    FName Key;
     if (Form == EWeaponForm::Regular)
     {
-        Key = FName(TEXT("RChargeEnd"));
+        MontageName = FName(TEXT("RChargeEnd"));
     }
     else if (Form == EWeaponForm::Transformed)
     {
 
     }
 
-    PlayAttackAnim(Key);
+    PlayAttackAnim(MontageName);
 }
 
 
 void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
 {
-    FName Key;
     if (Action == EActionType::LightAttack)
     {
         if (Form == EWeaponForm::Regular)
         {
-            Key = FName(TEXT("RRollLight"));
+            MontageName = FName(TEXT("RRollLight"));
         }
         else if (Form == EWeaponForm::Transformed)
         {
@@ -149,7 +144,7 @@ void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
     {
         if (Form == EWeaponForm::Regular)
         {
-            Key = FName(TEXT(""));
+            MontageName = FName(TEXT(""));
         }
         else if (Form == EWeaponForm::Transformed)
         {
@@ -157,7 +152,72 @@ void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
         }
     }
 
-    PlayAttackAnim(Key);
+    PlayAttackAnim(MontageName);
+}
+
+void UWeaponInstance::BackstepAttack(EActionType Action, EWeaponForm Form)
+{
+    if (Action == EActionType::LightAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RBackstepLight"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+    else if (Action == EActionType::HeavyAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RBackstepHeavy"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+}
+
+
+void UWeaponInstance::JumpAttack(EWeaponForm Form)
+{
+    if (Form == EWeaponForm::Regular)
+    {
+        MontageName = FName(TEXT("RLeapHeavy"));
+    }
+    else if (Form == EWeaponForm::Transformed)
+    {
+
+    }
+}
+
+void UWeaponInstance::SprintAttack(EActionType Action, EWeaponForm Form)
+{
+    if (Action == EActionType::LightAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RSprintLight"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+    else if (Action == EActionType::HeavyAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RSprintHeavy"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
 }
 
 void UWeaponInstance::ResetState()
@@ -173,6 +233,8 @@ void UWeaponInstance::PlayAttackAnim(FName Key)
     {
         UAnimMontage* Montage = AnimationData->AttackMontage;
         if (Montage)
+        {
             CurrAnimInstance->Montage_Play(Montage, 1.0f);
+        }
     }
 }

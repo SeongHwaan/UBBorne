@@ -30,10 +30,10 @@ public:
     virtual void HeavyEnd(EWeaponForm Form);
     virtual void ChargeEnd(EWeaponForm Form);
     virtual void RollAttack(EActionType Action, EWeaponForm Form);
-    virtual void BackstepAttack() {};
-    virtual void DodgeAttack() {};
-    virtual void JumpAttack() {};
-    virtual void SprintAttack() {};
+    virtual void BackstepAttack(EActionType Action, EWeaponForm Form);
+    virtual void DodgeAttack(EActionType Action, EWeaponForm Form) {};
+    virtual void JumpAttack(EWeaponForm Form);
+    virtual void SprintAttack(EActionType Action, EWeaponForm Form);
     virtual void WeaponChange() {};
 
     void ResetState();
@@ -52,6 +52,7 @@ protected:
 private:
     int32 AttackIndex;
     bool bIsRight;
+    FName MontageName;
 };
 
 UCLASS()

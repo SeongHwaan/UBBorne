@@ -31,3 +31,8 @@ void UBBGameInstance::SetResourceManager(AHunterCharacter* Character)
         UE_LOG(LogTemp, Error, TEXT("GameInstance: ResourceManager is nullptr!"));
     }
 }
+
+UResourceManager* UBBGameInstance::GetResourceManager() const
+{
+    return ResourceManager;
+}

@@ -91,7 +91,7 @@ private:
     void AnimNotify_CanInput();
 
     UFUNCTION()
-    void AnimNotify_NextAttackCheck();
+    void AnimNotify_NextActionCheck();
 
     UFUNCTION()
     void AnimNotify_AttackHitCheck();

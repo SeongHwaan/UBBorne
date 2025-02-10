@@ -62,15 +62,19 @@ void ABBPlayerController::SetupInputComponent()
 
 void ABBPlayerController::Move(const FInputActionValue& Value)
 {
+    const FVector2D MovementVector = Value.Get<FVector2D>();
+    BBCharacter->SetDirectionAngle(MovementVector);
+    BBCharacter->SetbHasMovementInput(true);
+
     if (BBCharacter->GetbCanNextAction())
     {
-        const FVector2D MovementVector = Value.Get<FVector2D>();
         BBCharacter->Move(MovementVector);
     }
 }
 
 void ABBPlayerController::MoveEnd()
 {
+    BBCharacter->SetbHasMovementInput(false);
     BBCharacter->MoveEnd();
 }
 
@@ -90,6 +94,8 @@ void ABBPlayerController::StopJump()
 
 void ABBPlayerController::LockOn()
 {
+    //90도까지는 목만 방향을 바꾸고
+    //그 아예 회전 애니메이션
 	bool bLockCheck = BBCharacter->GetIsLockOn();
     if (!bLockCheck)
     {
@@ -102,7 +108,7 @@ void ABBPlayerController::LockOn()
 
 void ABBPlayerController::Dodge()
 {
-	BBCharacter->Dodging();
+    BBCharacter->BindBufferedAction([this]() { BBCharacter->Dodge(); });
 }
 
 void ABBPlayerController::DodgeEnd()
@@ -124,7 +130,7 @@ void ABBPlayerController::Sprinting()
     bool bLockCheck = BBCharacter->GetIsLockOn();
     if (!bLockCheck)
     {
-        BBCharacter->Sprinting();
+        BBCharacter->Sprint();
     }
 }
 
@@ -135,34 +141,14 @@ void ABBPlayerController::StopSprint()
 
 void ABBPlayerController::LightAttack()
 {
-    if (BBCharacter->GetbCanInput() && !BBCharacter->GetbCanNextAction())
-    {
-        BBCharacter->AddBufferAction(EActionType::LightAttack);
-        return;
-    }
-    if (BBCharacter->GetbCanNextAction())
-    {
-        BBCharacter->ConsumeBufferedAction();
-        BBCharacter->LightAttack();
-        return;
-    }
+    BBCharacter->BindBufferedAction([this]() { BBCharacter->LightAttack(); });
 }
 
 void ABBPlayerController::HeavyAttackStart()
 {
-    BBCharacter->SetbIsCharging(true);
-
-    if (BBCharacter->GetbCanInput() && !BBCharacter->GetbCanNextAction())
-    {
-        BBCharacter->AddBufferAction(EActionType::HeavyAttack);
-        return;
-    }
-    if (BBCharacter->GetbCanNextAction())
-    {
-        BBCharacter->ConsumeBufferedAction();
-        BBCharacter->HeavyAttack();
-        return;
-    }
+    BBCharacter->BindBufferedAction([this]() { 
+        BBCharacter->SetbIsCharging(true);
+        BBCharacter->HeavyAttack(); });
 }
 
 void ABBPlayerController::HeavyAttackEnd()

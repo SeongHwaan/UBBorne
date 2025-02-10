@@ -28,7 +28,11 @@ enum class EActionType : uint8
     LightAttack UMETA(DisplayName = "LightAttack"),
     HeavyAttack UMETA(DisplayName = "HeavyAttack"),
     WeaponChange UMETA(DisplayName = "WeaponChange"),
-    LeftAttack UMETA(DisplayName = "LeftAttack")
+    LeftAttack UMETA(DisplayName = "LeftAttack"),
+
+    UseItem UMETA(DisplayName = "UseItem"),
+    Heal UMETA(DisplayName = "Heal"),
+    Interact UMETA(DisplayName = "Interact"),
 };
 
 UENUM(BlueprintType)
@@ -76,20 +80,36 @@ public:
     void Look(const FVector2D& Vector);
     void CustomJump();
     void CustomStopJump();
-    void Sprinting();
+    void Sprint();
     void StopSprinting();
-    void Dodging();
+    void Dodge();
     void StopDodging();
 
     // 입력 버퍼 저장 (비어있을 때만 저장)
-    void AddBufferAction(EActionType NewAction);
-    // 버퍼 실행 후 초기화
-    void ConsumeBufferedAction();
+    template <typename Func>
+    void BindBufferedAction(Func&& Action)
+    {
+        if (bCanInput && !bCanNextAction)
+        {
+            if (!HasBufferedAction())
+                BufferedAction = [Action]() { Action(); };
+        }
+        else if (bCanNextAction)
+        {
+            Action();
+        }
+    }
 
-    bool GetHasMovementInput() const;
+    // 버퍼 확인
+    bool HasBufferedAction() const;
+
+    bool GetbHasMovementInput() const;
+    void SetbHasMovementInput(bool input);
+
     bool GetIsSprinting() const;
     bool GetIsDodging() const;
     float GetDirectionAngle();
+    void SetDirectionAngle(FVector2D Vector);
 
     bool GetbCanInput() const;
     bool GetbCanNextAction() const;
@@ -127,8 +147,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float targetSpeed = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    EActionType BufferedAction = EActionType::None;
+    TFunction<void()> BufferedAction;
 
 private:
     float PreviousInputIntensity = 0.0f;
@@ -317,6 +336,9 @@ public:
 
     UFUNCTION()
     void OnMontageStarted(UAnimMontage* Montage);
+
+    UFUNCTION()
+    void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))

@@ -24,9 +24,7 @@ public:
 
 private:
 
-    UPROPERTY()
     TObjectPtr<UDataTable> WeaponDataTable;
-    UPROPERTY()
     TObjectPtr<UAnimInstance> AnimInstance;
 	
 };
