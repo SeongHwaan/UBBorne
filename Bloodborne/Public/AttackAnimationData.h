@@ -6,6 +6,14 @@
 #include "Engine/DataTable.h"
 #include "AttackAnimationData.generated.h"
 
+UENUM(BlueprintType)
+enum class EStartPos : uint8
+{
+    Right = 0 UMETA(DisplayName = "Right"),
+    Left = 1 UMETA(DisplayName = "Left"),
+    None = 2 UMETA(DisplayName = "None")
+};
+
 
 USTRUCT(BlueprintType)
 struct FAttackAnimationData : public FTableRowBase
@@ -20,4 +28,7 @@ struct FAttackAnimationData : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float StaminaCost;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    EStartPos StartPos;
 };

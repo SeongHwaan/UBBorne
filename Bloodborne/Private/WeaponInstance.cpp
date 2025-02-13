@@ -8,7 +8,7 @@
 
 UWeaponInstance::UWeaponInstance()
 {
-    AttackIndex = 1;
+    AttackIndex = 0;
     bIsRight = true;
     WeaponData = nullptr;
 }
@@ -18,24 +18,29 @@ void UWeaponInstance::InitializeWeapon(FName RowName)
     WeaponName = RowName;
     if (UWorld* World = GetWorld())
     {
-        UBBGameInstance* MyGameInstance = Cast<UBBGameInstance>(World->GetGameInstance());
-        ResourceManager = MyGameInstance->GetResourceManager();
-        WeaponDataTable = ResourceManager->GetWeaponDataTable();
+        auto MyGameInstance = Cast<UBBGameInstance>(World->GetGameInstance());
+        auto ResourceManager = MyGameInstance->GetSubsystem<UResourceManager>();
+        auto WeaponDataTable = ResourceManager->GetWeaponDataTable();
+        PlayerAnimInstance = ResourceManager->GetPlayerAnimInstance();
         if (WeaponDataTable)
         {
             WeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponName, TEXT("WeaponData"));
             LoadedWeaponAnimations = WeaponData->AnimationData;
             WeaponMesh = WeaponData->WeaponMesh;
         }
-        CurrAnimInstance = ResourceManager->GetAnimInstance();
     }
 
     // Delegate in PostInitializeComponents or BeginPlay rather than a constructor.
-    auto Anim = Cast<UHunterAnimInstance>(CurrAnimInstance);
-    Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
+    if (PlayerAnimInstance)
+    {
+        auto Anim = Cast<UHunterAnimInstance>(PlayerAnimInstance);
+        Anim->OnAttackEnd.AddUObject(this, &UWeaponInstance::ResetState);
+    }
+    else
+        UE_LOG(LogTemp, Warning, TEXT("no AnimInstance"));
 }
 
-const TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh()
+TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh() const
 {
     return WeaponMesh;
 }
@@ -46,31 +51,31 @@ void UWeaponInstance::SetAttackIndex(int input)
 }
 
 
-void UWeaponInstance::LightCombo(EWeaponForm Form)
+void UWeaponInstance::PlayLightCombo(EWeaponForm Form)
 {
     if (Form == EWeaponForm::Regular)
     {
         switch (AttackIndex)
         {
-        case 1:
+        case 0:
             MontageName = FName(TEXT("RLightComboStart"));
             AttackIndex++;
             break;
-        case 2:
+        case 1:
             MontageName = FName(TEXT("RLightCombo1"));
             AttackIndex++;
             break;
-        case 3:
+        case 2:
             MontageName = FName(TEXT("RLightCombo2"));
             AttackIndex++;
             break;
-        case 4:
+        case 3:
             MontageName = FName(TEXT("RLightCombo3"));
             AttackIndex++;
             break;
-        case 5:
+        case 4:
             MontageName = FName(TEXT("RLightCombo4"));
-            AttackIndex = 2;
+            AttackIndex = 1;
             break;
         }
     }
@@ -79,10 +84,11 @@ void UWeaponInstance::LightCombo(EWeaponForm Form)
     {
     }
 
-    PlayAttackAnim(MontageName);
+    SetAnimData(MontageName);
+    PlayAttackAnim();
 }
 
-void UWeaponInstance::HeavyStart(EWeaponForm Form)
+void UWeaponInstance::PlayHeavyStart(EWeaponForm Form)
 {
     //CanDoNextAction을 애님 시작 전에 체크
     if (Form == EWeaponForm::Regular)
@@ -93,12 +99,11 @@ void UWeaponInstance::HeavyStart(EWeaponForm Form)
     {
 
     }
-
-
-    PlayAttackAnim(MontageName);
+    SetAnimData(MontageName);
+    PlayAttackAnim();
 }
 
-void UWeaponInstance::HeavyEnd(EWeaponForm Form)
+void UWeaponInstance::PlayHeavyEnd(EWeaponForm Form)
 {
     if (Form == EWeaponForm::Regular)
     {
@@ -108,11 +113,12 @@ void UWeaponInstance::HeavyEnd(EWeaponForm Form)
     {
 
     }
-
-    PlayAttackAnim(MontageName);
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
 }
 
-void UWeaponInstance::ChargeEnd(EWeaponForm Form)
+void UWeaponInstance::PlayChargeEnd(EWeaponForm Form)
 {
     if (Form == EWeaponForm::Regular)
     {
@@ -122,12 +128,13 @@ void UWeaponInstance::ChargeEnd(EWeaponForm Form)
     {
 
     }
-
-    PlayAttackAnim(MontageName);
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
 }
 
 
-void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
+void UWeaponInstance::PlayRollAttack(EActionType Action, EWeaponForm Form)
 {
     if (Action == EActionType::LightAttack)
     {
@@ -144,18 +151,19 @@ void UWeaponInstance::RollAttack(EActionType Action, EWeaponForm Form)
     {
         if (Form == EWeaponForm::Regular)
         {
-            MontageName = FName(TEXT(""));
+            MontageName = FName(TEXT("RHeavyStart"));
         }
         else if (Form == EWeaponForm::Transformed)
         {
 
         }
     }
-
-    PlayAttackAnim(MontageName);
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
 }
 
-void UWeaponInstance::BackstepAttack(EActionType Action, EWeaponForm Form)
+void UWeaponInstance::PlayBackstepAttack(EActionType Action, EWeaponForm Form)
 {
     if (Action == EActionType::LightAttack)
     {
@@ -179,10 +187,47 @@ void UWeaponInstance::BackstepAttack(EActionType Action, EWeaponForm Form)
 
         }
     }
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
+}
+
+void UWeaponInstance::PlayDodgeAttack(EActionType Action, EWeaponForm Form, float angle)
+{
+    if (Action == EActionType::LightAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            if (FMath::Abs(angle) < 67.5)
+                MontageName = FName(TEXT("RRollLight"));
+            else if ( 67.5 <= angle && angle < 112.5)
+                MontageName = FName(TEXT("RDodgeRight"));
+            else
+                MontageName = FName(TEXT("RDodgeDefault"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+    else if (Action == EActionType::HeavyAttack)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RHeavyStart"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+
+        }
+    }
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
 }
 
 
-void UWeaponInstance::JumpAttack(EWeaponForm Form)
+void UWeaponInstance::PlayJumpAttack(EWeaponForm Form)
 {
     if (Form == EWeaponForm::Regular)
     {
@@ -192,9 +237,12 @@ void UWeaponInstance::JumpAttack(EWeaponForm Form)
     {
 
     }
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
 }
 
-void UWeaponInstance::SprintAttack(EActionType Action, EWeaponForm Form)
+void UWeaponInstance::PlaySprintAttack(EActionType Action, EWeaponForm Form)
 {
     if (Action == EActionType::LightAttack)
     {
@@ -218,23 +266,55 @@ void UWeaponInstance::SprintAttack(EActionType Action, EWeaponForm Form)
 
         }
     }
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
+}
+
+void UWeaponInstance::PlayFormChange(EWeaponForm Form, bool bIsAttacking, USkeletalMeshComponent* WeaponMeshComp)
+{
+    if (bIsAttacking)
+    {
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RTransAttackToR"));
+        }
+    }
+    else
+    {
+        MontageName = FName(TEXT("RToT"));
+    }
+    SetAnimData(MontageName);
+    PlayAttackAnim();
+    CheckLeftRight();
+}
+
+int UWeaponInstance::CheckLeftRight()
+{
+    int CurrentPos = static_cast<int>(AnimData->StartPos);
+    AttackIndex = (CurrentPos + 1) % 2;
+    return AttackIndex;
 }
 
 void UWeaponInstance::ResetState()
 {
-    AttackIndex = 1;
+    AttackIndex = 0;
     UE_LOG(LogTemp, Warning, TEXT("Reset worked"));
 }
 
-void UWeaponInstance::PlayAttackAnim(FName Key)
+void UWeaponInstance::SetAnimData(FName Key)
 {
-    auto AnimationData = LoadedWeaponAnimations.Find(Key);
-    if (AnimationData)
+    AnimData = LoadedWeaponAnimations.Find(Key);
+}
+
+void UWeaponInstance::PlayAttackAnim()
+{
+    if (AnimData)
     {
-        UAnimMontage* Montage = AnimationData->AttackMontage;
+        auto Montage = AnimData->AttackMontage;
         if (Montage)
         {
-            CurrAnimInstance->Montage_Play(Montage, 1.0f);
+            PlayerAnimInstance->Montage_Play(Montage, 1.0f);
         }
     }
 }

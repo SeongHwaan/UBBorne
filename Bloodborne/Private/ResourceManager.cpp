@@ -3,10 +3,18 @@
 
 #include "ResourceManager.h"
 
-void UResourceManager::DoInitialize(UAnimInstance* InAnimInstance, UDataTable* InDataTable)
+UResourceManager::UResourceManager()
 {
-    AnimInstance = InAnimInstance;
-    WeaponDataTable = InDataTable;
+    static ConstructorHelpers::FObjectFinder<UDataTable> WeaponData(TEXT("/Game/Data/WeaponDataTable.WeaponDataTable"));
+    if (WeaponData.Succeeded())
+    {
+        WeaponDataTable = WeaponData.Object;
+    }
+}
+
+void UResourceManager::DoInitialize(UAnimInstance* InAnimInstance)
+{
+    PlayerAnimInstance = InAnimInstance;
 }
 
 TObjectPtr<UDataTable> UResourceManager::GetWeaponDataTable() const
@@ -14,7 +22,7 @@ TObjectPtr<UDataTable> UResourceManager::GetWeaponDataTable() const
     return WeaponDataTable;
 }
 
-TObjectPtr<UAnimInstance> UResourceManager::GetAnimInstance() const
+TObjectPtr<UAnimInstance> UResourceManager::GetPlayerAnimInstance() const
 {
-    return AnimInstance;
+    return PlayerAnimInstance;
 }

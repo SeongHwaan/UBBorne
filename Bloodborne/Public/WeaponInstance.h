@@ -21,47 +21,38 @@ public:
 
     void InitializeWeapon(FName RowName);
 
-    const TObjectPtr<USkeletalMesh> GetWeaponMesh();
+    TObjectPtr<USkeletalMesh> GetWeaponMesh() const;
 
     void SetAttackIndex(int input);
 
-    virtual void LightCombo(EWeaponForm Form);
-    virtual void HeavyStart(EWeaponForm Form);
-    virtual void HeavyEnd(EWeaponForm Form);
-    virtual void ChargeEnd(EWeaponForm Form);
-    virtual void RollAttack(EActionType Action, EWeaponForm Form);
-    virtual void BackstepAttack(EActionType Action, EWeaponForm Form);
-    virtual void DodgeAttack(EActionType Action, EWeaponForm Form) {};
-    virtual void JumpAttack(EWeaponForm Form);
-    virtual void SprintAttack(EActionType Action, EWeaponForm Form);
-    virtual void WeaponChange() {};
+    virtual void PlayLightCombo(EWeaponForm Form);
+    virtual void PlayHeavyStart(EWeaponForm Form);
+    virtual void PlayHeavyEnd(EWeaponForm Form);
+    virtual void PlayChargeEnd(EWeaponForm Form);
+    virtual void PlayRollAttack(EActionType Action, EWeaponForm Form);
+    virtual void PlayBackstepAttack(EActionType Action, EWeaponForm Form);
+    virtual void PlayDodgeAttack(EActionType Action, EWeaponForm Form, float angle);
+    virtual void PlayJumpAttack(EWeaponForm Form);
+    virtual void PlaySprintAttack(EActionType Action, EWeaponForm Form);
+    virtual void PlayFormChange(EWeaponForm Form, bool bIsAttacking, class USkeletalMeshComponent* WeaponMeshComp);
 
+    int CheckLeftRight();
     void ResetState();
-    void PlayAttackAnim(FName Key);
+
+    void SetAnimData(FName Key);
+    void PlayAttackAnim();
 
 protected:
     // Don't think UPROPERTY() is necessary
-    TObjectPtr<class UResourceManager> ResourceManager;
-    FName WeaponName;
-    TObjectPtr<UDataTable> WeaponDataTable;
-    FWeaponData* WeaponData;
     TObjectPtr<USkeletalMesh> WeaponMesh;
-    TObjectPtr<UAnimInstance> CurrAnimInstance;
+    FName WeaponName;
+    FWeaponData* WeaponData;
     TMap<FName, FAttackAnimationData> LoadedWeaponAnimations;
+    FAttackAnimationData* AnimData;
+    UAnimInstance* PlayerAnimInstance;
 
-private:
     int32 AttackIndex;
     bool bIsRight;
     FName MontageName;
+
 };
-
-UCLASS()
-class BLOODBORNE_API USawCleaver : public UWeaponInstance
-{
-    GENERATED_BODY()
-
-public:
-    //HardCoding?
-    USawCleaver() : UWeaponInstance() {};
-};
-

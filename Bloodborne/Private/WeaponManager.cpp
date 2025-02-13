@@ -6,13 +6,14 @@
 #include "Animation/AnimMontage.h"
 #include "WeaponData.h"
 #include "WeaponInstance.h"
+#include "Weapons/SawCleaver.h"
 
 UWeaponManager::UWeaponManager()
 {
     InitializeWeaponClasses();
 }
 
-TObjectPtr<class UWeaponInstance> UWeaponManager::LoadRWeapon(FName WeaponName)
+TObjectPtr<UWeaponInstance> UWeaponManager::LoadRWeapon(FName WeaponName)
 {
     //Make Exception Later
     auto WeaponClass = UWeaponManager::RightWeaponClassMap.Find(WeaponName);
@@ -30,7 +31,7 @@ TObjectPtr<class UWeaponInstance> UWeaponManager::LoadRWeapon(FName WeaponName)
     return RWeapon;
 }
 
-TObjectPtr<class UWeaponInstance> UWeaponManager::LoadLWeapon(FName WeaponName)
+TObjectPtr<UWeaponInstance> UWeaponManager::LoadLWeapon(FName WeaponName)
 {
     auto WeaponClass = UWeaponManager::LeftWeaponClassMap.Find(WeaponName);
     if (!WeaponClass || !*WeaponClass)
@@ -43,6 +44,7 @@ TObjectPtr<class UWeaponInstance> UWeaponManager::LoadLWeapon(FName WeaponName)
         LWeapon = nullptr;
     }
     LWeapon = NewObject<UWeaponInstance>(this, *WeaponClass);
+    LWeapon->InitializeWeapon(WeaponName);
     return LWeapon;
 }
 

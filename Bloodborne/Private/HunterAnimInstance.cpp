@@ -49,6 +49,8 @@ void UHunterAnimInstance::PlayLockOnDodgeMontage()
         Montage_Play(Left, 1.0f);
     else if (-67.5 < angle && angle < -22.5)
         Montage_Play(ForwardLeft, 1.0f);
+
+    PCharacter->SetLastDodgeAngle(angle);
 }
 
 void UHunterAnimInstance::PlayRollMontage()

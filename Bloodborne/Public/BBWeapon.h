@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Bloodborne.h"
+#include "HunterCharacter.h"
 #include "GameFramework/Actor.h"
 #include "BBWeapon.generated.h"
 
@@ -15,10 +16,22 @@ public:
 	// Sets default values for this actor's properties
 	ABBWeapon();
 
-    const TObjectPtr<class UWeaponInstance> GetWeaponInstance();
-    void SetWeaponInstance(class UWeaponInstance* Instance);
-    void SetWeaponMesh();
+    void Initialize();
 
+    TObjectPtr<class UWeaponInstance> GetWeaponInstance() const;
+    void SetWeaponInstance(class UWeaponInstance* Instance);
+    void SetWeaponMeshComponent();
+
+    void LightCombo(EWeaponForm Form);
+    void HeavyStart(EWeaponForm Form);
+    void HeavyEnd(EWeaponForm Form);
+    void ChargeEnd(EWeaponForm Form);
+    void RollAttack(EActionType Action, EWeaponForm Form);
+    void BackstepAttack(EActionType Action, EWeaponForm Form);
+    void DodgeAttack(EActionType Action, EWeaponForm Form, float angle);
+    void JumpAttack(EWeaponForm Form);
+    void SprintAttack(EActionType Action, EWeaponForm Form);
+    void FormChange(EWeaponForm Form, bool bIsAttacking);
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,9 +41,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+    USkeletalMeshComponent* WeaponMeshComponent;
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
     TObjectPtr<class UWeaponInstance> WeaponInstance;
+
+    TObjectPtr<UAnimInstance> PlayerAnimInstance;
 };

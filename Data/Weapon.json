@@ -1,7 +1,7 @@
 [
     {
         "Name": "SawCleaver",
-        "WeaponName": "Sword",
+        "WeaponName": "SawCleaver",
         "WeaponMesh": "/Script/Engine.SkeletalMesh'/Game/Bloodborne/Meshes/Weapon/SawCleaver/SawCleaver.SawCleaver'",
         "DefaultDamage": 100,
         "Durability": 100,
@@ -9,107 +9,140 @@
             "RLightComboStart": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RLightComboStart.RLightComboStart'",
                 "DamageRate": 1.0,
-                "StaminaCost": 20.0
+                "StaminaCost": 20.0,
+                "StartPos": "Right"
             },
             "RLightCombo1": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RLightCombo1.RLightCombo1'",
                 "DamageRate": 1.02,
-                "StaminaCost": 20.0
+                "StaminaCost": 20.0,
+                "StartPos": "Left"
             },
             "RLightCombo2": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RLightCombo2.RLightCombo2'",
                 "DamageRate": 1.04,
-                "StaminaCost": 20.0
+                "StaminaCost": 20.0,
+                "StartPos": "Right"
             },
             "RLightCombo3": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RLightCombo3.RLightCombo3'",
                 "DamageRate": 1.06,
-                "StaminaCost": 20.0
+                "StaminaCost": 20.0,
+                "StartPos": "Left"
             },
             "RLightCombo4": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RLightCombo4.RLightCombo4'",
                 "DamageRate": 1.09,
-                "StaminaCost": 20.0
+                "StaminaCost": 20.0,
+                "StartPos": "Right"
             },
             "RDodgeDefault": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RDodgeDefault.RDodgeDefault'",
                 "DamageRate": 0.95,
-                "StaminaCost": 27.0
+                "StaminaCost": 27.0,
+                "StartPos": "Left"
             },
             "RDodgeRight": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RDodgeRight.RDodgeRight'",
                 "DamageRate": 0.95,
-                "StaminaCost": 27.0
+                "StaminaCost": 27.0,
+                "StartPos": "Right"
             },
             "RRollLight": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RRollLight.RRollLight'",
                 "DamageRate": 0.95,
-                "StaminaCost": 27.0
+                "StaminaCost": 27.0,
+                "StartPos": "Left"
             },
             "RBackstepLight": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RBackstepLight.RBackstepLight'",
                 "DamageRate": 0.95,
-                "StaminaCost": 25.0
+                "StaminaCost": 25.0,
+                "StartPos": "Right"
             },
             "RBackstepHeavy": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RBackstepHeavy.RBackstepHeavy'",
                 "DamageRate": 1.10,
-                "StaminaCost": 35.0
+                "StaminaCost": 35.0,
+                "StartPos": "Left"
             },
             "RSprintLight": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RSprintLight.RSprintLight'",
                 "DamageRate": 1.09,
-                "StaminaCost": 30.0
+                "StaminaCost": 30.0,
+                "StartPos": "Left"
             },
             "RSprintHeavy": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RSprintHeavy.RSprintHeavy'",
                 "DamageRate": 1.25,
-                "StaminaCost": 45.0
+                "StaminaCost": 45.0,
+                "StartPos": "Right"
             },
             "RHeavyStart": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RHeavyStart.RHeavyStart'",
                 "DamageRate": 0.0,
-                "StaminaCost": 0.0
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
             },
             "RHeavyEnd": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RHeavyEnd.RHeavyEnd'",
                 "DamageRate": 1.20,
-                "StaminaCost": 35.0
+                "StaminaCost": 35.0,
+                "StartPos": "Right"
             },
             "RChargeEnd": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RChargeEnd.RChargeEnd'",
                 "DamageRate": 1.90,
-                "StaminaCost": 50.0
+                "StaminaCost": 50.0,
+                "StartPos": "Right"
             },
             "RLeapHeavy": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RLeapHeavy.RLeapHeavy'",
                 "DamageRate": 1.40,
-                "StaminaCost": 50.0
+                "StaminaCost": 50.0,
+                "StartPos": "Right"
             },
             "RTransAttackToL": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RTransAttackToL.RTransAttackToL'",
                 "DamageRate": 1.30,
-                "StaminaCost": 23.0
+                "StaminaCost": 23.0,
+                "StartPos": "Right"
             },
             "RTransAttackToR": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RTransAttackToR.RTransAttackToR'",
                 "DamageRate": 1.30,
-                "StaminaCost": 23.0
+                "StaminaCost": 23.0,
+                "StartPos": "Left"
             },
             "RFallAttackStart": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RFallAttackStart.RFallAttackStart'",
                 "DamageRate": 0.0,
-                "StaminaCost": 0.0
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
             },
             "RFallAttackIng": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RFallAttackIng.RFallAttackIng'",
                 "DamageRate": 0.0,
-                "StaminaCost": 0.0
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
             },
             "RFallAttackEnd": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Regular/RFallAttackEnd.RFallAttackEnd'",
                 "DamageRate": 1.50,
-                "StaminaCost": 30.0
+                "StaminaCost": 30.0,
+                "StartPos": "Right"
+            },
+            "RToT": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/RToT.RToT'",
+                "DamageRate": 0.0,
+                "StaminaCost": 0.0,
+                "StartPos": "None"
+            },
+            "TToR": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/TToR.TToR'",
+                "DamageRate": 0.0,
+                "StaminaCost": 0.0,
+                "StartPos": "None"
             }
         }
     }

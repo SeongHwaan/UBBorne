@@ -12,19 +12,18 @@
 UCLASS()
 class BLOODBORNE_API UResourceManager : public UGameInstanceSubsystem
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
 
-    UResourceManager() {};
+    UResourceManager();
 
-    void DoInitialize(UAnimInstance* InAnimInstance, UDataTable* InDataTable);
+    void DoInitialize(UAnimInstance* InAnimInstance);
     TObjectPtr<UDataTable> GetWeaponDataTable() const;
-    TObjectPtr<UAnimInstance> GetAnimInstance() const;
+    TObjectPtr<UAnimInstance> GetPlayerAnimInstance() const;
 
 private:
 
     TObjectPtr<UDataTable> WeaponDataTable;
-    TObjectPtr<UAnimInstance> AnimInstance;
-	
+    TObjectPtr<UAnimInstance> PlayerAnimInstance;
 };

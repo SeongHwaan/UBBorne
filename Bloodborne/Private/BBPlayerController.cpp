@@ -63,8 +63,10 @@ void ABBPlayerController::SetupInputComponent()
 void ABBPlayerController::Move(const FInputActionValue& Value)
 {
     const FVector2D MovementVector = Value.Get<FVector2D>();
+    if (MovementVector.Size() < BBCharacter->MinimumInput)
+        return;
+
     BBCharacter->SetDirectionAngle(MovementVector);
-    BBCharacter->SetbHasMovementInput(true);
 
     if (BBCharacter->GetbCanNextAction())
     {
@@ -74,7 +76,6 @@ void ABBPlayerController::Move(const FInputActionValue& Value)
 
 void ABBPlayerController::MoveEnd()
 {
-    BBCharacter->SetbHasMovementInput(false);
     BBCharacter->MoveEnd();
 }
 
@@ -146,8 +147,8 @@ void ABBPlayerController::LightAttack()
 
 void ABBPlayerController::HeavyAttackStart()
 {
+    BBCharacter->SetbIsCharging(true);
     BBCharacter->BindBufferedAction([this]() { 
-        BBCharacter->SetbIsCharging(true);
         BBCharacter->HeavyAttack(); });
 }
 
@@ -167,5 +168,5 @@ void ABBPlayerController::HeavyAttackEnd()
 
 void ABBPlayerController::WeaponChange()
 {
-    BBCharacter->WeaponChange();
+    BBCharacter->FormChange();
 }

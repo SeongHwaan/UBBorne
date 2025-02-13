@@ -27,7 +27,7 @@ enum class EActionType : uint8
     None UMETA(DisplayName = "None"),
     LightAttack UMETA(DisplayName = "LightAttack"),
     HeavyAttack UMETA(DisplayName = "HeavyAttack"),
-    WeaponChange UMETA(DisplayName = "WeaponChange"),
+    FormChange UMETA(DisplayName = "FormChange"),
     LeftAttack UMETA(DisplayName = "LeftAttack"),
 
     UseItem UMETA(DisplayName = "UseItem"),
@@ -69,8 +69,6 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class UCameraComponent> Camera;
-
-    UPROPERTY()
     TObjectPtr<class UHunterAnimInstance> Anim;
 
 //Normal / Movement
@@ -84,6 +82,9 @@ public:
     void StopSprinting();
     void Dodge();
     void StopDodging();
+
+    //공격 등에 의해 몽타주가 제대로 끝나지 않고 강제 종료된 경우 사용
+    void ResetState();
 
     // 입력 버퍼 저장 (비어있을 때만 저장)
     template <typename Func>
@@ -99,52 +100,49 @@ public:
             Action();
         }
     }
-
     // 버퍼 확인
     bool HasBufferedAction() const;
 
     bool GetbHasMovementInput() const;
-    void SetbHasMovementInput(bool input);
 
     bool GetIsSprinting() const;
-    bool GetIsDodging() const;
+
     float GetDirectionAngle();
     void SetDirectionAngle(FVector2D Vector);
+    float GetLastDodgeAngle();
+    void SetLastDodgeAngle(float input);
 
     bool GetbCanInput() const;
     bool GetbCanNextAction() const;
     void SetbCanInput(bool input);
     void SetbCanNextAction(bool input);
 
-    //private:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+public:
+    float MinimumInput = 0.3f;
+    float MaximumInput = 0.9f;
+
+private:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
     FVector2D InputDirection = FVector2D::ZeroVector;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool bHasMovementInput = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float InputChangeRate = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float InputIntensity = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool bIsSprinting = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-    bool bIsDodging = false;
+    bool bIsAttacking = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool bCanInput = true;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     bool bCanNextAction = true;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float MovementDirectionAngle = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+    float LastDodgeAngle = 0.0f;
+
     float targetSpeed = 0.0f;
 
     TFunction<void()> BufferedAction;
@@ -161,16 +159,13 @@ public:
     bool GetIsLockOn() const;
     bool IsTargetVisible(APawn* Pawn);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-    bool bIsLockOn = false;
-
     TObjectPtr<APawn> FindClosestPawn();
 
 private:
-    UPROPERTY(EditAnywhere, Category = "Camera")
+    bool bIsLockOn = false;
     float MaxLockOnDistance = 1000.0f;
 
-    UPROPERTY(EditAnywhere, Category = "Camera")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<APawn> TargetPawn = nullptr;
 
 //MovementState
@@ -178,6 +173,8 @@ private:
 public:
     EMovementState GetMovementState();
     void SetMovementState(EMovementState State);
+
+    void ResetMovementState();
 
     //EActionType GetActionType() const;
     //void SetActionType(EActionType Action);
@@ -187,8 +184,11 @@ private:
     {
     public:
         virtual void Move(AHunterCharacter* Chr) {};
-        virtual void HandleAction(AHunterCharacter* Chr) = 0;
-        void NormalAction(AHunterCharacter* Chr);
+        virtual void Attack(AHunterCharacter* Chr) {};
+        void CommonAttack(AHunterCharacter* Chr);
+
+        void WeaponChange(AHunterCharacter* Chr);
+        //add common action / open door, open chest, talk, useitem
 
         virtual ~MovementState() = default;
     };
@@ -196,40 +196,40 @@ private:
     class NoneState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     class WalkState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     class RunState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     class SprintState : public MovementState
     {
         void Move(AHunterCharacter* Chr) override;
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     class RollState : public MovementState
     {
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     class DodgeState : public MovementState
     {
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     class BackstepState : public MovementState
     {
-        void HandleAction(AHunterCharacter* Chr) override;
+        void Attack(AHunterCharacter* Chr) override;
     };
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
@@ -255,8 +255,6 @@ public:
 
     class ABBWeapon* GetRightWeapon();
 
-    UDataTable* GetWeaponDataTable() const;
-
     EActionType GetActionType() const;
     EWeaponForm GetWeaponForm() const;
     //RemoveWeapon()
@@ -267,15 +265,15 @@ public:
     bool GetbCanQuitCharge() const;
     void SetbCanQuitCharge(bool input);
 
-
+    
 private:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-    UDataTable* WeaponDataTable;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    //Visible 교체
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<class ABBWeapon> WeaponClass;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    //UPROPERTY에 쓰면 GC가 바로 삭제하는 오류
+    //UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class UWeaponManager> WeaponManager;
+
 
     FName RightWeaponSocket;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
@@ -284,10 +282,6 @@ private:
     TObjectPtr<class ABBWeapon> RWeapon1;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class ABBWeapon> RWeapon2;
-    
-    bool bIsCharging = false;
-    bool bCanQuitCharge = false;
-
 
 
     FName LeftWeaponSocket;
@@ -306,29 +300,17 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     EWeaponForm ECurrentWeaponForm;
 
-//RightWeaponState
-private:
-    //Section odd / even -> right / left
 
+    bool bIsCharging = false;
+    bool bCanQuitCharge = false;
 
-    //split 0, 1 to left and right
-    //add new notify for combo attack montage that can hold combo index
-    //+ add new method for end delegate that make combo index = 0
-    // make case for that combo systems
-
-    //Right to Left : even    /   Left to Right : odd
-
-//Attack & Damage
-//Flow: 1. playercontroller calls Hunter -> Lef / Hea / WeaChan Action
-//      2. Hunter calls HandleAction by its movement state (roll, sprint ...)
-//      3. HandleAction calls weaponstate's method
 public:
     
     //virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
     void LightAttack();
     void HeavyAttack();
-    void WeaponChange();
+    void FormChange();
     //void AttackCheck();
 
     void HeavyAttackEnd();
