@@ -59,37 +59,49 @@ void UWeaponInstance::PlayLightCombo(EWeaponForm Form)
         {
         case 0:
             MontageName = FName(TEXT("RLightComboStart"));
-            AttackIndex++;
             break;
         case 1:
             MontageName = FName(TEXT("RLightCombo1"));
-            AttackIndex++;
             break;
         case 2:
             MontageName = FName(TEXT("RLightCombo2"));
-            AttackIndex++;
             break;
         case 3:
             MontageName = FName(TEXT("RLightCombo3"));
-            AttackIndex++;
             break;
         case 4:
             MontageName = FName(TEXT("RLightCombo4"));
-            AttackIndex = 1;
+            AttackIndex = 0;
             break;
         }
     }
 
     else if (Form == EWeaponForm::Transformed)
     {
+        switch (AttackIndex)
+        {
+        case 0:
+            MontageName = FName(TEXT("TLightComboStart"));
+            break;
+        case 1:
+            MontageName = FName(TEXT("TLightCombo1"));
+            break;
+        case 2:
+            MontageName = FName(TEXT("TLightCombo2"));
+            AttackIndex = 0;
+            break;
+        }
     }
 
     SetAnimData(MontageName);
+    AttackIndex++;
     PlayAttackAnim();
 }
 
 void UWeaponInstance::PlayHeavyStart(EWeaponForm Form)
 {
+    CheckLeftRight();
+
     //CanDoNextAction을 애님 시작 전에 체크
     if (Form == EWeaponForm::Regular)
     {
@@ -97,7 +109,15 @@ void UWeaponInstance::PlayHeavyStart(EWeaponForm Form)
     }
     else if (Form == EWeaponForm::Transformed)
     {
-
+        switch (AttackIndex)
+        {
+        case 0:
+            MontageName = FName(TEXT("THeavyStart0"));
+            break;
+        case 1:
+            MontageName = FName(TEXT("THeavyStart1"));
+            break;
+        }
     }
     SetAnimData(MontageName);
     PlayAttackAnim();
@@ -111,11 +131,19 @@ void UWeaponInstance::PlayHeavyEnd(EWeaponForm Form)
     }
     else if (Form == EWeaponForm::Transformed)
     {
-
+        switch (AttackIndex)
+        {
+        case 0:
+            MontageName = FName(TEXT("THeavyEnd0"));
+            break;
+        case 1:
+            MontageName = FName(TEXT("THeavyEnd1"));
+            break;
+        }
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
 void UWeaponInstance::PlayChargeEnd(EWeaponForm Form)
@@ -126,11 +154,35 @@ void UWeaponInstance::PlayChargeEnd(EWeaponForm Form)
     }
     else if (Form == EWeaponForm::Transformed)
     {
-
+        switch (AttackIndex)
+        {
+        case 0:
+            MontageName = FName(TEXT("TChargeEnd0"));
+            break;
+        case 1:
+            MontageName = FName(TEXT("TChargeEnd1"));
+            break;
+        }
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
+}
+
+void UWeaponInstance::PlayHeavyAfterCharge()
+{
+    switch (AttackIndex)
+    {
+    case 0:
+        MontageName = FName(TEXT("THeavyAfterCharge1"));
+        break;
+    case 1:
+        MontageName = FName(TEXT("THeavyAfterCharge0"));
+        break;
+    }
+    SetAnimData(MontageName);
+    NextLeftRight();
+    PlayAttackAnim();
 }
 
 
@@ -144,23 +196,17 @@ void UWeaponInstance::PlayRollAttack(EActionType Action, EWeaponForm Form)
         }
         else if (Form == EWeaponForm::Transformed)
         {
-
+            MontageName = FName(TEXT("TRollLight"));
         }
     }
     else if (Action == EActionType::HeavyAttack)
     {
-        if (Form == EWeaponForm::Regular)
-        {
-            MontageName = FName(TEXT("RHeavyStart"));
-        }
-        else if (Form == EWeaponForm::Transformed)
-        {
-
-        }
+        PlayHeavyStart(Form);
+        return;
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
 void UWeaponInstance::PlayBackstepAttack(EActionType Action, EWeaponForm Form)
@@ -173,7 +219,7 @@ void UWeaponInstance::PlayBackstepAttack(EActionType Action, EWeaponForm Form)
         }
         else if (Form == EWeaponForm::Transformed)
         {
-
+            MontageName = FName(TEXT("TBackstepLight"));
         }
     }
     else if (Action == EActionType::HeavyAttack)
@@ -184,12 +230,12 @@ void UWeaponInstance::PlayBackstepAttack(EActionType Action, EWeaponForm Form)
         }
         else if (Form == EWeaponForm::Transformed)
         {
-
+            MontageName = FName(TEXT("TBackstepHeavy"));
         }
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
 void UWeaponInstance::PlayDodgeAttack(EActionType Action, EWeaponForm Form, float angle)
@@ -207,23 +253,22 @@ void UWeaponInstance::PlayDodgeAttack(EActionType Action, EWeaponForm Form, floa
         }
         else if (Form == EWeaponForm::Transformed)
         {
-
+            if (FMath::Abs(angle) < 67.5)
+                MontageName = FName(TEXT("TRollLight"));
+            else if (-112.5 <= angle && angle < -67.5)
+                MontageName = FName(TEXT("TDodgeLeft"));
+            else
+                MontageName = FName(TEXT("TDodgeDefault"));
         }
     }
     else if (Action == EActionType::HeavyAttack)
     {
-        if (Form == EWeaponForm::Regular)
-        {
-            MontageName = FName(TEXT("RHeavyStart"));
-        }
-        else if (Form == EWeaponForm::Transformed)
-        {
-
-        }
+        PlayHeavyStart(Form);
+        return;
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
 
@@ -235,11 +280,11 @@ void UWeaponInstance::PlayJumpAttack(EWeaponForm Form)
     }
     else if (Form == EWeaponForm::Transformed)
     {
-
+        MontageName = FName(TEXT("TLeapHeavy"));
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
 void UWeaponInstance::PlaySprintAttack(EActionType Action, EWeaponForm Form)
@@ -252,7 +297,7 @@ void UWeaponInstance::PlaySprintAttack(EActionType Action, EWeaponForm Form)
         }
         else if (Form == EWeaponForm::Transformed)
         {
-
+            MontageName = FName(TEXT("TSprintLight"));
         }
     }
     else if (Action == EActionType::HeavyAttack)
@@ -263,37 +308,73 @@ void UWeaponInstance::PlaySprintAttack(EActionType Action, EWeaponForm Form)
         }
         else if (Form == EWeaponForm::Transformed)
         {
-
+            MontageName = FName(TEXT("TSprintHeavy"));
         }
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
 void UWeaponInstance::PlayFormChange(EWeaponForm Form, bool bIsAttacking, USkeletalMeshComponent* WeaponMeshComp)
 {
+    CheckLeftRight();
+
     if (bIsAttacking)
     {
         if (Form == EWeaponForm::Regular)
         {
-            MontageName = FName(TEXT("RTransAttackToR"));
+            switch (AttackIndex)
+            {
+            case 0:
+                MontageName = FName(TEXT("RTransAttackToL"));
+                break;
+            case 1:
+                MontageName = FName(TEXT("RTransAttackToR"));
+                break;
+            }
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+            switch (AttackIndex)
+            {
+            case 0:
+                MontageName = FName(TEXT("TTransAttackToL"));
+                break;
+            case 1:
+                MontageName = FName(TEXT("TTransAttackToR"));
+                break;
+            }
         }
     }
     else
     {
-        MontageName = FName(TEXT("RToT"));
+        //공격으로 여겨지면 안 됨
+        //이 액션으로 Index로 증가하면 안 됨
+        if (Form == EWeaponForm::Regular)
+        {
+            MontageName = FName(TEXT("RToT"));
+        }
+        else if (Form == EWeaponForm::Transformed)
+        {
+            MontageName = FName(TEXT("TToR"));
+        }
     }
     SetAnimData(MontageName);
+    NextLeftRight();
     PlayAttackAnim();
-    CheckLeftRight();
 }
 
-int UWeaponInstance::CheckLeftRight()
+void UWeaponInstance::CheckLeftRight()
 {
+    AttackIndex = AttackIndex % 2;
+}
+
+void UWeaponInstance::NextLeftRight()
+{
+    //이런 설계면 굳이 CurrentPos를 왜...
     int CurrentPos = static_cast<int>(AnimData->StartPos);
     AttackIndex = (CurrentPos + 1) % 2;
-    return AttackIndex;
 }
 
 void UWeaponInstance::ResetState()
@@ -314,6 +395,7 @@ void UWeaponInstance::PlayAttackAnim()
         auto Montage = AnimData->AttackMontage;
         if (Montage)
         {
+            //Montage_Play가 끝나야 PlayAttackAnim() 함수가 끝나나?
             PlayerAnimInstance->Montage_Play(Montage, 1.0f);
         }
     }

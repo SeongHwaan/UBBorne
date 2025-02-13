@@ -106,6 +106,7 @@ public:
     bool GetbHasMovementInput() const;
 
     bool GetIsSprinting() const;
+    bool GetIsAttacking() const;
 
     float GetDirectionAngle();
     void SetDirectionAngle(FVector2D Vector);
@@ -265,6 +266,8 @@ public:
     bool GetbCanQuitCharge() const;
     void SetbCanQuitCharge(bool input);
 
+    bool GetbChargeFinished() const;
+    void SetbChargeFinished(bool input);
     
 private:
     //Visible 교체
@@ -300,9 +303,9 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     EWeaponForm ECurrentWeaponForm;
 
-
     bool bIsCharging = false;
     bool bCanQuitCharge = false;
+    bool bChargeFinished = false;
 
 public:
     
@@ -321,11 +324,4 @@ public:
 
     UFUNCTION()
     void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-private:
-    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
-    bool IsAttacking = false;
-
-    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Attack", Meta = (AllowPrivateAccess = true))
-    bool IsComboInputOn = false;
 };

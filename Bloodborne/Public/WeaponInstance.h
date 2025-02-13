@@ -29,6 +29,7 @@ public:
     virtual void PlayHeavyStart(EWeaponForm Form);
     virtual void PlayHeavyEnd(EWeaponForm Form);
     virtual void PlayChargeEnd(EWeaponForm Form);
+    virtual void PlayHeavyAfterCharge();
     virtual void PlayRollAttack(EActionType Action, EWeaponForm Form);
     virtual void PlayBackstepAttack(EActionType Action, EWeaponForm Form);
     virtual void PlayDodgeAttack(EActionType Action, EWeaponForm Form, float angle);
@@ -36,7 +37,9 @@ public:
     virtual void PlaySprintAttack(EActionType Action, EWeaponForm Form);
     virtual void PlayFormChange(EWeaponForm Form, bool bIsAttacking, class USkeletalMeshComponent* WeaponMeshComp);
 
-    int CheckLeftRight();
+    //Light에 의해 Index가 2 이상인 된 경우를 위해
+    void CheckLeftRight();
+    void NextLeftRight();
     void ResetState();
 
     void SetAnimData(FName Key);
@@ -51,6 +54,8 @@ protected:
     FAttackAnimationData* AnimData;
     UAnimInstance* PlayerAnimInstance;
 
+    //AttackIndex: 0 -> Right Start
+    //AttackIndex: 1 -> Left Start
     int32 AttackIndex;
     bool bIsRight;
     FName MontageName;

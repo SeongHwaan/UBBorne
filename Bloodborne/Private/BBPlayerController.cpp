@@ -168,5 +168,5 @@ void ABBPlayerController::HeavyAttackEnd()
 
 void ABBPlayerController::WeaponChange()
 {
-    BBCharacter->FormChange();
+    BBCharacter->BindBufferedAction([this]() { BBCharacter->FormChange(); });
 }

@@ -132,6 +132,8 @@
                 "StaminaCost": 30.0,
                 "StartPos": "Right"
             },
+
+
             "RToT": {
                 "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/RToT.RToT'",
                 "DamageRate": 0.0,
@@ -143,6 +145,152 @@
                 "DamageRate": 0.0,
                 "StaminaCost": 0.0,
                 "StartPos": "None"
+            },
+
+
+            "TLightComboStart": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TLightComboStart.TLightComboStart'",
+                "DamageRate": 0.97,
+                "StaminaCost": 24.0,
+                "StartPos": "Right"
+            },
+            "TLightCombo1": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TLightCombo1.TLightCombo1'",
+                "DamageRate": 1.0,
+                "StaminaCost": 24.0,
+                "StartPos": "Left"
+            }, 
+            "TLightCombo2": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TLightCombo2.TLightCombo2'",
+                "DamageRate": 1.02,
+                "StaminaCost": 24.0,
+                "StartPos": "Right"
+            }, 
+            "TDodgeDefault": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TDodgeDefault.TDodgeDefault'",
+                "DamageRate": 0.95,
+                "StaminaCost": 30.0,
+                "StartPos": "Right"
+            },
+            "TDodgeLeft": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TDodgeLeft.TDodgeLeft'",
+                "DamageRate": 0.95,
+                "StaminaCost": 30.0,
+                "StartPos": "Left"
+            },
+            "TRollLight": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TRollLight.TRollLight'",
+                "DamageRate": 0.95,
+                "StaminaCost": 30.0,
+                "StartPos": "Right"
+            },
+            "TBackstepLight": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TBackstepLight.TBackstepLight'",
+                "DamageRate": 0.95,
+                "StaminaCost": 25.0,
+                "StartPos": "Right"
+            },
+            "TBackstepHeavy": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TBackstepHeavy.TBackstepHeavy'",
+                "DamageRate": 1.10,
+                "StaminaCost": 37.0,
+                "StartPos": "Right"
+            },
+            "TSprintLight": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TSprintLight.TSprintLight'",
+                "DamageRate": 1.15,
+                "StaminaCost": 30.0,
+                "StartPos": "Right"
+            },
+            "TSprintHeavy": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TSprintHeavy.TSprintHeavy'",
+                "DamageRate": 1.20,
+                "StaminaCost": 45.0,
+                "StartPos": "Right"
+            },
+            "THeavyStart0": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/THeavyStart0.THeavyStart0'",
+                "DamageRate": 0.00,
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
+            },
+            "THeavyEnd0": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/THeavyEnd0.THeavyEnd0'",
+                "DamageRate": 1.25,
+                "StaminaCost": 38.0,
+                "StartPos": "Right"
+            },
+            "TChargeEnd0": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TChargeEnd0.TChargeEnd0'",
+                "DamageRate": 1.70,
+                "StaminaCost": 50.0,
+                "StartPos": "Right"
+            },
+            "THeavyAfterCharge0": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/THeavyAfterCharge0.THeavyAfterCharge0'",
+                "DamageRate": 1.27,
+                "StaminaCost": 50.0,
+                "StartPos": "Right"
+            },
+            "THeavyStart1": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/THeavyStart1.THeavyStart1'",
+                "DamageRate": 0.0,
+                "StaminaCost": 0.0,
+                "StartPos": "Left"
+            },
+            "THeavyEnd1": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/THeavyEnd1.THeavyEnd1'",
+                "DamageRate": 1.27,
+                "StaminaCost": 38.0,
+                "StartPos": "Left"
+            },
+            "TChargeEnd1": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TChargeEnd1.TChargeEnd1'",
+                "DamageRate": 1.70,
+                "StaminaCost": 50.0,
+                "StartPos": "Left"
+            },
+            "THeavyAfterCharge1": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/THeavyAfterCharge1.THeavyAfterCharge1'",
+                "DamageRate": 1.27,
+                "StaminaCost": 50.0,
+                "StartPos": "Left"
+            },            
+            "TLeapHeavy": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TLeapHeavy.TLeapHeavy'",
+                "DamageRate": 1.30,
+                "StaminaCost": 50.0,
+                "StartPos": "Right"
+            },            
+            "TTransAttackToL": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TTransAttackToL.TTransAttackToL'",
+                "DamageRate": 1.30,
+                "StaminaCost": 30.0,
+                "StartPos": "Right"
+            },            
+            "TTransAttackToR": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TTransAttackToR.TTransAttackToR'",
+                "DamageRate": 1.30,
+                "StaminaCost": 30.0,
+                "StartPos": "Left"
+            },            
+            "TFallAttackStart": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TFallAttackStart.TFallAttackStart'",
+                "DamageRate": 0.00,
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
+            },            
+            "TFallAttackIng": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TFallAttackIng.TFallAttackIng'",
+                "DamageRate": 0.00,
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
+            },            
+            "TFallAttackEnd": {
+                "AttackMontage": "/Script/Engine.AnimMontage'/Game/Bloodborne/Animations/Weapon/SawCleaver/Montage/Transformed/TFallAttackEnd.TFallAttackEnd'",
+                "DamageRate": 0.00,
+                "StaminaCost": 0.0,
+                "StartPos": "Right"
             }
         }
     }

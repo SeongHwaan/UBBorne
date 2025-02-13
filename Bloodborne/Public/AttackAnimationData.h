@@ -11,7 +11,7 @@ enum class EStartPos : uint8
 {
     Right = 0 UMETA(DisplayName = "Right"),
     Left = 1 UMETA(DisplayName = "Left"),
-    None = 2 UMETA(DisplayName = "None")
+    None = 3 UMETA(DisplayName = "None")
 };
 
 

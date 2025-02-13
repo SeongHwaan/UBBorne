@@ -26,6 +26,7 @@ public:
     void HeavyStart(EWeaponForm Form);
     void HeavyEnd(EWeaponForm Form);
     void ChargeEnd(EWeaponForm Form);
+    void HeavyAfterCharge();
     void RollAttack(EActionType Action, EWeaponForm Form);
     void BackstepAttack(EActionType Action, EWeaponForm Form);
     void DodgeAttack(EActionType Action, EWeaponForm Form, float angle);

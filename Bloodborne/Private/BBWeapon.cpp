@@ -90,6 +90,11 @@ void ABBWeapon::ChargeEnd(EWeaponForm Form)
     WeaponInstance->PlayChargeEnd(Form);
 }
 
+void ABBWeapon::HeavyAfterCharge()
+{
+    WeaponInstance->PlayHeavyAfterCharge();
+}
+
 void ABBWeapon::RollAttack(EActionType Action, EWeaponForm Form)
 {
     WeaponInstance->PlayRollAttack(Action, Form);

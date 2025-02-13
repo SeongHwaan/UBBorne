@@ -128,9 +128,11 @@ void AHunterCharacter::PostInitializeComponents()
             ChargeAttackEnd();
             bCanQuitCharge = false;
             bIsCharging = false;
+            bChargeFinished = true;
         }
         });
     Anim->OnAttackEnd.AddLambda([this]() -> void {
+        bChargeFinished = false;
         });
 }
 
@@ -178,8 +180,8 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     if (Anim->IsAnyMontagePlaying())
     {
         //추후 통합 중단 로직 추가
-        Anim->OnAttackEnd.Broadcast();
         Anim->Montage_Stop(0.3f);
+        Anim->OnAttackEnd.Broadcast();
     }
 
     AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X), InputDirection.Y * targetSpeed);
@@ -240,6 +242,7 @@ void AHunterCharacter::Dodge()
     }
     else
     {
+        //Roll 방향 개선
         ECurrentMovementState = EMovementState::Roll;
         SetMovementState(ECurrentMovementState);
         Anim->PlayRollMontage();
@@ -272,6 +275,11 @@ bool AHunterCharacter::GetbHasMovementInput() const
 bool AHunterCharacter::GetIsSprinting() const
 {
     return bIsSprinting;
+}
+
+bool AHunterCharacter::GetIsAttacking() const
+{
+    return bIsAttacking;
 }
 
 float AHunterCharacter::GetDirectionAngle()
@@ -523,6 +531,16 @@ void AHunterCharacter::SetbCanQuitCharge(bool input)
     bCanQuitCharge = input;
 }
 
+bool AHunterCharacter::GetbChargeFinished() const
+{
+    return bChargeFinished;
+}
+
+void AHunterCharacter::SetbChargeFinished(bool input)
+{
+    bChargeFinished = input;
+}
+
 void AHunterCharacter::LightAttack()
 {
     bIsAttacking = true;
@@ -530,6 +548,8 @@ void AHunterCharacter::LightAttack()
     CurrentMovementState->Attack(this);
     
     ResetMovementState();
+
+    //ActionType도 추후 Reset
 }
 
 void AHunterCharacter::HeavyAttack()
@@ -545,12 +565,14 @@ void AHunterCharacter::FormChange()
 {
     ECurrentActionType = EActionType::FormChange;
     auto Form = GetWeaponForm();
-    CurrentRWeapon->FormChange(Form, bIsAttacking);
+    CurrentMovementState->Attack(this);
 
     if (ECurrentWeaponForm == EWeaponForm::Regular)
         ECurrentWeaponForm = EWeaponForm::Transformed;
     else
         ECurrentWeaponForm = EWeaponForm::Regular;
+
+    ResetMovementState();
 }
 
 void AHunterCharacter::HeavyAttackEnd()
@@ -649,10 +671,18 @@ void AHunterCharacter::MovementState::CommonAttack(AHunterCharacter* Chr)
         Weapon->LightCombo(Form);
         break;
     case EActionType::HeavyAttack:
-        Weapon->HeavyStart(Form);
+        if (Chr->GetbChargeFinished() && Form == EWeaponForm::Transformed)
+        {
+
+            //ChargeEnd 이후에 끊기면 SetbChargeFinished가 계속 true가 되는 문제
+            Chr->SetbChargeFinished(false);
+            Weapon->HeavyAfterCharge();
+        }
+        else
+            Weapon->HeavyStart(Form);
         break;
     case EActionType::FormChange:
-        //Instance->WeaponChange(Form, bIsAttacking);
+        Weapon->FormChange(Form, Chr->GetIsAttacking());
         break;
     }
 }
