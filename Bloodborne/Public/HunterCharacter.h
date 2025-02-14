@@ -105,8 +105,8 @@ public:
 
     bool GetbHasMovementInput() const;
 
-    bool GetIsSprinting() const;
-    bool GetIsAttacking() const;
+    bool GetbIsSprinting() const;
+    bool GetbIsAttacking() const;
 
     float GetDirectionAngle();
     void SetDirectionAngle(FVector2D Vector);
@@ -175,6 +175,7 @@ public:
     EMovementState GetMovementState();
     void SetMovementState(EMovementState State);
 
+    UFUNCTION()
     void ResetMovementState();
 
     //EActionType GetActionType() const;
@@ -271,7 +272,7 @@ public:
     
 private:
     //Visible 교체
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+    //UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<class ABBWeapon> WeaponClass;
     //UPROPERTY에 쓰면 GC가 바로 삭제하는 오류
     //UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))

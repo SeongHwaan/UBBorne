@@ -21,6 +21,7 @@ public:
     TObjectPtr<class UWeaponInstance> GetWeaponInstance() const;
     void SetWeaponInstance(class UWeaponInstance* Instance);
     void SetWeaponMeshComponent();
+    void GiveWeaponComponentToInstance();
 
     void LightCombo(EWeaponForm Form);
     void HeavyStart(EWeaponForm Form);

@@ -96,5 +96,10 @@ void UHunterAnimInstance::AnimNotify_ChargeEnd()
     OnChargeEnd.Broadcast();
 }
 
+void UHunterAnimInstance::AnimNotify_FormAttack()
+{
+    OnFormAttack.Broadcast();
+}
+
 
 

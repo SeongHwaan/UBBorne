@@ -18,9 +18,9 @@ USawCleaver::USawCleaver()
     }
 }
 
-void USawCleaver::PlayFormChange(EWeaponForm Form, bool bIsAttacking, USkeletalMeshComponent* WeaponMeshComp)
+void USawCleaver::PlayFormChange(EWeaponForm Form, bool bIsAttacking)
 {
-    Super::PlayFormChange(Form, bIsAttacking, WeaponMeshComp);
+    Super::PlayFormChange(Form, bIsAttacking);
 
     if (Form == EWeaponForm::Regular)
         WeaponMeshComp->PlayAnimation(SawCleaverRToT, false);

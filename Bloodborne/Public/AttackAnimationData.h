@@ -9,9 +9,9 @@
 UENUM(BlueprintType)
 enum class EStartPos : uint8
 {
+    None = 3 UMETA(DisplayName = "None"),
     Right = 0 UMETA(DisplayName = "Right"),
-    Left = 1 UMETA(DisplayName = "Left"),
-    None = 3 UMETA(DisplayName = "None")
+    Left = 1 UMETA(DisplayName = "Left")
 };
 
 

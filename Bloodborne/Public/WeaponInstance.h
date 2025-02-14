@@ -23,6 +23,7 @@ public:
 
     TObjectPtr<USkeletalMesh> GetWeaponMesh() const;
 
+    void SetWeaponMeshComp(USkeletalMeshComponent* Component);
     void SetAttackIndex(int input);
 
     virtual void PlayLightCombo(EWeaponForm Form);
@@ -35,7 +36,7 @@ public:
     virtual void PlayDodgeAttack(EActionType Action, EWeaponForm Form, float angle);
     virtual void PlayJumpAttack(EWeaponForm Form);
     virtual void PlaySprintAttack(EActionType Action, EWeaponForm Form);
-    virtual void PlayFormChange(EWeaponForm Form, bool bIsAttacking, class USkeletalMeshComponent* WeaponMeshComp);
+    virtual void PlayFormChange(EWeaponForm Form, bool bIsAttacking);
 
     //Light에 의해 Index가 2 이상인 된 경우를 위해
     void CheckLeftRight();
@@ -51,8 +52,9 @@ protected:
     FName WeaponName;
     FWeaponData* WeaponData;
     TMap<FName, FAttackAnimationData> LoadedWeaponAnimations;
-    FAttackAnimationData* AnimData;
+    FAttackAnimationData* CurrAnimData;
     UAnimInstance* PlayerAnimInstance;
+    USkeletalMeshComponent* WeaponMeshComp;
 
     //AttackIndex: 0 -> Right Start
     //AttackIndex: 1 -> Left Start

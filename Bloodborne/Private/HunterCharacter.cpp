@@ -51,25 +51,13 @@ AHunterCharacter::AHunterCharacter()
 
     RightWeaponSocket = FName(TEXT("hand_rSocket"));
     WeaponManager = CreateDefaultSubobject<UWeaponManager>(TEXT("WeaponManager"));
+
+    WeaponClass = ABBWeapon::StaticClass();
 }
 
 void AHunterCharacter::BeginPlay()
 {
     Super::BeginPlay();
-
-    UBBGameInstance* GameInstance = GetGameInstance<UBBGameInstance>();
-    if (GameInstance)
-    {
-        //Set ResourceManager
-        GameInstance->SetResourceManager(this);
-        SetRightWeapon(RWeapon1, TEXT("SawCleaver"));
-        CurrentRWeapon = RWeapon1;
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("NoGmaeInstance"));
-        return;
-    }
 }
 
 void AHunterCharacter::Tick(float DeltaTime)
@@ -131,9 +119,27 @@ void AHunterCharacter::PostInitializeComponents()
             bChargeFinished = true;
         }
         });
+    Anim->OnFormAttack.AddLambda([this]() -> void {
+        bIsAttacking = true;
+        });
     Anim->OnAttackEnd.AddLambda([this]() -> void {
         bChargeFinished = false;
         });
+
+
+    UBBGameInstance* GameInstance = GetGameInstance<UBBGameInstance>();
+    if (GameInstance)
+    {
+        //Set ResourceManager
+        GameInstance->SetResourceManager(this);
+        SetRightWeapon(RWeapon1, TEXT("SawCleaver"));
+        CurrentRWeapon = RWeapon1;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("NoGmaeInstance"));
+        return;
+    }
 }
 
 void AHunterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -166,12 +172,6 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     {
         ECurrentMovementState = EMovementState::Run;
     }
-    else
-    {
-        //ECurrentMovementState = EMovementState::None;
-        //SetMovementState(ECurrentMovementState);
-        //return;
-    }
 
     //State Pattern
     SetMovementState(ECurrentMovementState);
@@ -200,6 +200,9 @@ void AHunterCharacter::MoveEnd()
 {
     InputDirection = FVector2D::ZeroVector;
     bHasMovementInput = false;
+
+    if (!Anim->IsAnyMontagePlaying())
+        ResetMovementState();
 }
 
 void AHunterCharacter::Look(const FVector2D& Vector)
@@ -272,12 +275,12 @@ bool AHunterCharacter::GetbHasMovementInput() const
     return bHasMovementInput;
 }
 
-bool AHunterCharacter::GetIsSprinting() const
+bool AHunterCharacter::GetbIsSprinting() const
 {
     return bIsSprinting;
 }
 
-bool AHunterCharacter::GetIsAttacking() const
+bool AHunterCharacter::GetbIsAttacking() const
 {
     return bIsAttacking;
 }
@@ -489,6 +492,7 @@ void AHunterCharacter::SetRightWeapon(TObjectPtr<class ABBWeapon>& RightWeapon, 
     {
         NewWeapon->SetWeaponInstance(WeaponInstance);
         NewWeapon->SetWeaponMeshComponent();
+        NewWeapon->GiveWeaponComponentToInstance();
     }
     NewWeapon->Initialize();
     NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, RightWeaponSocket);
@@ -561,6 +565,7 @@ void AHunterCharacter::HeavyAttack()
     ResetMovementState();
 }
 
+
 void AHunterCharacter::FormChange()
 {
     ECurrentActionType = EActionType::FormChange;
@@ -591,6 +596,7 @@ void AHunterCharacter::OnMontageStarted(UAnimMontage* Montage)
 {
     bCanInput = false;
     bCanNextAction = false;
+    bChargeFinished = false;
 }
 
 void AHunterCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -673,8 +679,8 @@ void AHunterCharacter::MovementState::CommonAttack(AHunterCharacter* Chr)
     case EActionType::HeavyAttack:
         if (Chr->GetbChargeFinished() && Form == EWeaponForm::Transformed)
         {
-
             //ChargeEnd 이후에 끊기면 SetbChargeFinished가 계속 true가 되는 문제
+            //AttackEnd에서 초기화 / 회피 몽타주나 이동에서 AttackEnd.BroadCast
             Chr->SetbChargeFinished(false);
             Weapon->HeavyAfterCharge();
         }
@@ -682,7 +688,11 @@ void AHunterCharacter::MovementState::CommonAttack(AHunterCharacter* Chr)
             Weapon->HeavyStart(Form);
         break;
     case EActionType::FormChange:
-        Weapon->FormChange(Form, Chr->GetIsAttacking());
+        // Common인 상황 외에 FormChange는 WeaponInstance에서 기존 함수 재사용
+        // 그런 방식은 bIsAttacking 갱신이 안 되는 문제
+        // 교체 공격 몽타주에 notify 추가
+        // 추후 개선 요망
+        Weapon->FormChange(Form, Chr->GetbIsAttacking());
         break;
     }
 }

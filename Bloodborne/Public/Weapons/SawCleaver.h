@@ -18,7 +18,7 @@ public:
 
     USawCleaver();
 
-    void PlayFormChange(EWeaponForm Form, bool bIsAttacking, class USkeletalMeshComponent* WeaponAnim);
+    void PlayFormChange(EWeaponForm Form, bool bIsAttacking);
 
 private:
 

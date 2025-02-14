@@ -13,6 +13,7 @@ DECLARE_MULTICAST_DELEGATE(FOnAttackEndedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnChargeStartCheckDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnChargeEndedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnCanInputDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnFormAttackDelegate);
 
 UCLASS()
 class BLOODBORNE_API UHunterAnimInstance : public UAnimInstance
@@ -84,6 +85,8 @@ public:
     FOnAttackEndedDelegate OnAttackEnd;
     FOnChargeStartCheckDelegate OnChargeStartCheck;
     FOnChargeEndedDelegate OnChargeEnd;
+    FOnFormAttackDelegate OnFormAttack;
+
 
 private:
 
@@ -105,4 +108,6 @@ private:
     UFUNCTION()
     void AnimNotify_ChargeEnd();
 
+    UFUNCTION()
+    void AnimNotify_FormAttack();
 };

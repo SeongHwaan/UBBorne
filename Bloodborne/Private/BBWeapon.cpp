@@ -56,6 +56,12 @@ void ABBWeapon::SetWeaponMeshComponent()
         WeaponMeshComponent->SetSkeletalMesh(WeaponInstance->GetWeaponMesh());
 }
 
+void ABBWeapon::GiveWeaponComponentToInstance()
+{
+    if (WeaponInstance != nullptr)
+        WeaponInstance->SetWeaponMeshComp(WeaponMeshComponent);
+}
+
 // Called when the game starts or when spawned
 void ABBWeapon::BeginPlay()
 {
@@ -122,5 +128,5 @@ void ABBWeapon::SprintAttack(EActionType Action, EWeaponForm Form)
 
 void ABBWeapon::FormChange(EWeaponForm Form, bool bIsAttacking)
 {
-    WeaponInstance->PlayFormChange(Form, bIsAttacking, WeaponMeshComponent);
+    WeaponInstance->PlayFormChange(Form, bIsAttacking);
 }

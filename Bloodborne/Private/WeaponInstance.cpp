@@ -45,6 +45,11 @@ TObjectPtr<USkeletalMesh> UWeaponInstance::GetWeaponMesh() const
     return WeaponMesh;
 }
 
+void UWeaponInstance::SetWeaponMeshComp(USkeletalMeshComponent* Component)
+{
+    WeaponMeshComp = Component;
+}
+
 void UWeaponInstance::SetAttackIndex(int input)
 {
     AttackIndex = input;
@@ -75,7 +80,6 @@ void UWeaponInstance::PlayLightCombo(EWeaponForm Form)
             break;
         }
     }
-
     else if (Form == EWeaponForm::Transformed)
     {
         switch (AttackIndex)
@@ -171,13 +175,16 @@ void UWeaponInstance::PlayChargeEnd(EWeaponForm Form)
 
 void UWeaponInstance::PlayHeavyAfterCharge()
 {
+    //코드가 좀...
+    //ChargeEnd가 다음 방향을 바꿔버려서 다시 바꿔줘야 함
+    AttackIndex = (AttackIndex + 1) % 2;
     switch (AttackIndex)
     {
     case 0:
-        MontageName = FName(TEXT("THeavyAfterCharge1"));
+        MontageName = FName(TEXT("THeavyAfterCharge0"));
         break;
     case 1:
-        MontageName = FName(TEXT("THeavyAfterCharge0"));
+        MontageName = FName(TEXT("THeavyAfterCharge1"));
         break;
     }
     SetAnimData(MontageName);
@@ -202,6 +209,11 @@ void UWeaponInstance::PlayRollAttack(EActionType Action, EWeaponForm Form)
     else if (Action == EActionType::HeavyAttack)
     {
         PlayHeavyStart(Form);
+        return;
+    }
+    else if (Action == EActionType::FormChange)
+    {
+        PlayFormChange(Form, true);
         return;
     }
     SetAnimData(MontageName);
@@ -232,6 +244,11 @@ void UWeaponInstance::PlayBackstepAttack(EActionType Action, EWeaponForm Form)
         {
             MontageName = FName(TEXT("TBackstepHeavy"));
         }
+    }
+    else if (Action == EActionType::FormChange)
+    {
+        PlayFormChange(Form, true);
+        return;
     }
     SetAnimData(MontageName);
     NextLeftRight();
@@ -266,6 +283,11 @@ void UWeaponInstance::PlayDodgeAttack(EActionType Action, EWeaponForm Form, floa
         PlayHeavyStart(Form);
         return;
     }
+    else if (Action == EActionType::FormChange)
+    {
+        PlayFormChange(Form, true);
+        return;
+    }
     SetAnimData(MontageName);
     NextLeftRight();
     PlayAttackAnim();
@@ -282,6 +304,7 @@ void UWeaponInstance::PlayJumpAttack(EWeaponForm Form)
     {
         MontageName = FName(TEXT("TLeapHeavy"));
     }
+    //공격 교체?
     SetAnimData(MontageName);
     NextLeftRight();
     PlayAttackAnim();
@@ -311,12 +334,18 @@ void UWeaponInstance::PlaySprintAttack(EActionType Action, EWeaponForm Form)
             MontageName = FName(TEXT("TSprintHeavy"));
         }
     }
+    //Sprint에서는 일반 교체
+    else if (Action == EActionType::FormChange)
+    {
+        PlayFormChange(Form, false);
+        return;
+    }
     SetAnimData(MontageName);
     NextLeftRight();
     PlayAttackAnim();
 }
 
-void UWeaponInstance::PlayFormChange(EWeaponForm Form, bool bIsAttacking, USkeletalMeshComponent* WeaponMeshComp)
+void UWeaponInstance::PlayFormChange(EWeaponForm Form, bool bIsAttacking)
 {
     CheckLeftRight();
 
@@ -349,8 +378,6 @@ void UWeaponInstance::PlayFormChange(EWeaponForm Form, bool bIsAttacking, USkele
     }
     else
     {
-        //공격으로 여겨지면 안 됨
-        //이 액션으로 Index로 증가하면 안 됨
         if (Form == EWeaponForm::Regular)
         {
             MontageName = FName(TEXT("RToT"));
@@ -373,7 +400,7 @@ void UWeaponInstance::CheckLeftRight()
 void UWeaponInstance::NextLeftRight()
 {
     //이런 설계면 굳이 CurrentPos를 왜...
-    int CurrentPos = static_cast<int>(AnimData->StartPos);
+    int CurrentPos = static_cast<int>(CurrAnimData->StartPos);
     AttackIndex = (CurrentPos + 1) % 2;
 }
 
@@ -385,14 +412,14 @@ void UWeaponInstance::ResetState()
 
 void UWeaponInstance::SetAnimData(FName Key)
 {
-    AnimData = LoadedWeaponAnimations.Find(Key);
+    CurrAnimData = LoadedWeaponAnimations.Find(Key);
 }
 
 void UWeaponInstance::PlayAttackAnim()
 {
-    if (AnimData)
+    if (CurrAnimData)
     {
-        auto Montage = AnimData->AttackMontage;
+        auto Montage = CurrAnimData->AttackMontage;
         if (Montage)
         {
             //Montage_Play가 끝나야 PlayAttackAnim() 함수가 끝나나?
