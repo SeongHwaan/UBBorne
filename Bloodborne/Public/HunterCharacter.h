@@ -69,7 +69,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class UCameraComponent> Camera;
-    TObjectPtr<class UHunterAnimInstance> Anim;
+    TObjectPtr<class UHunterAnimInstance> HunterAnim;
 
 //Normal / Movement
 public:
@@ -81,7 +81,14 @@ public:
     void Sprint();
     void StopSprinting();
     void Dodge();
-    void StopDodging();
+    void Backstep();
+
+    //No Root Motion
+    UFUNCTION(BlueprintNativeEvent, Category = "Roll")
+    void RollMovement();
+    UFUNCTION(BlueprintNativeEvent, Category = "Backstep")
+    void BackstepMovement();
+
 
     //공격 등에 의해 몽타주가 제대로 끝나지 않고 강제 종료된 경우 사용
     void ResetState();
@@ -104,6 +111,7 @@ public:
     bool HasBufferedAction() const;
 
     bool GetbHasMovementInput() const;
+    void SetbHasMovementInput(bool input);
 
     bool GetbIsSprinting() const;
     bool GetbIsAttacking() const;
@@ -122,10 +130,21 @@ public:
     float MinimumInput = 0.3f;
     float MaximumInput = 0.9f;
 
+    void SetDesiredRotationFromInput(const FVector2D& Input);
+
 private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
     FVector2D InputDirection = FVector2D::ZeroVector;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    FVector2D LastDirection = FVector2D::ZeroVector;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    FRotator DesiredRotation;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    FRotator NewRotation;
+
+    bool bRotating = false;
+    
     bool bHasMovementInput = false;
 
     float InputChangeRate = 0.0f;
@@ -142,11 +161,13 @@ private:
 
     float MovementDirectionAngle = 0.0f;
 
+
     float LastDodgeAngle = 0.0f;
 
     float targetSpeed = 0.0f;
 
     TFunction<void()> BufferedAction;
+
 
 private:
     float PreviousInputIntensity = 0.0f;

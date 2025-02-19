@@ -15,9 +15,7 @@ ABBWeapon::ABBWeapon()
 
     WeaponMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
     RootComponent = WeaponMeshComponent;
-
     //WeaponMeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
-
 }
 
 void ABBWeapon::Initialize()

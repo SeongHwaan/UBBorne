@@ -60,15 +60,63 @@ void AHunterCharacter::BeginPlay()
     Super::BeginPlay();
 }
 
+void AHunterCharacter::SetDesiredRotationFromInput(const FVector2D& Input)
+{
+
+    if (Input.IsNearlyZero()) return; // 입력이 없으면 처리할 필요 없음
+
+    // 입력 벡터 정규화
+    const FVector2D NormalizedInput = Input.GetSafeNormal();
+
+    // 현재 컨트롤러 회전 가져오기
+    const FRotator ControlRotation = GetControlRotation();
+
+    // Yaw만 고려하여 컨트롤러 회전을 기준으로 한 방향 벡터 계산
+    const FVector ForwardVector = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X);
+    const FVector RightVector = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y);
+
+    // 카메라 기준으로 입력 변환
+    FVector AdjustedDirection = ForwardVector * NormalizedInput.Y + RightVector * NormalizedInput.X;
+    AdjustedDirection.Z = 0.f; // Z 값 제거 (수평 회전만 고려)
+
+    // 변환된 방향을 이용해 Yaw 계산
+    float AngleRadians = FMath::Atan2(AdjustedDirection.Y, AdjustedDirection.X);
+    float AngleDegrees = FMath::RadiansToDegrees(AngleRadians);
+
+    // DesiredRotation 업데이트 (Pitch, Roll은 0)
+    DesiredRotation = FRotator(0.f, AngleDegrees, 0.f);
+
+    // 회전 시작 플래그 켜기
+    bRotating = true;
+}
+
 void AHunterCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (TargetPawn != nullptr)
+    if (TargetPawn == nullptr)
     {
-        float InterpSpeed = 6.0f;
+        if (bRotating)
+        {
+            FRotator CurrentRotation = GetActorRotation();
+            const float RotationSpeed = 700.f;
+            NewRotation = FMath::RInterpConstantTo(CurrentRotation, DesiredRotation, DeltaTime, RotationSpeed);
+
+            if (FMath::Abs(NewRotation.Yaw - DesiredRotation.Yaw) < 1.f)
+            {
+                NewRotation.Yaw = DesiredRotation.Yaw;
+                bRotating = false;
+
+            }
+            SetActorRotation(NewRotation);
+        }
+    }
+    else if (TargetPawn != nullptr && bIsLockOn)
+    {
+        float InterpSpeed = 3.0f; // 원하는 회전 속도에 맞게 조절
         FRotator TargetRotation = (TargetPawn->GetActorLocation() - GetActorLocation()).Rotation();
-        FRotator NewRotation = FMath::RInterpTo(GetControlRotation(), TargetRotation, DeltaTime, InterpSpeed);
+        NewRotation = FMath::RInterpTo(GetControlRotation(), TargetRotation, DeltaTime, InterpSpeed);
+        //FRotator NewRotation = FMath::RInterpTo(GetControlRotation(), TargetRotation, DeltaTime, InterpSpeed);
         GetController()->SetControlRotation(NewRotation);
         SetActorRotation(NewRotation);
 
@@ -82,17 +130,18 @@ void AHunterCharacter::Tick(float DeltaTime)
 void AHunterCharacter::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    Anim = Cast<UHunterAnimInstance>(GetMesh()->GetAnimInstance());
+    HunterAnim = Cast<UHunterAnimInstance>(GetMesh()->GetAnimInstance());
 
-    Anim->OnMontageStarted.AddDynamic(this, &AHunterCharacter::OnMontageStarted);
-    Anim->OnMontageEnded.AddDynamic(this, &AHunterCharacter::OnMontageEnded);
+    HunterAnim->OnMontageStarted.AddDynamic(this, &AHunterCharacter::OnMontageStarted);
+    HunterAnim->OnMontageEnded.AddDynamic(this, &AHunterCharacter::OnMontageEnded);
     
-    Anim->OnCanInput.AddLambda([this]() -> void {
+    HunterAnim->OnCanInput.AddLambda([this]() -> void {
         bCanInput = true;
         });
-    Anim->OnNextActionCheck.AddLambda([this]() -> void {
+    HunterAnim->OnNextActionCheck.AddLambda([this]() -> void {
         if (this->HasBufferedAction())
         {
+            SetDesiredRotationFromInput(LastDirection);
             BufferedAction();
             BufferedAction = nullptr;
         }
@@ -103,14 +152,14 @@ void AHunterCharacter::PostInitializeComponents()
             ResetMovementState();
         }
         });
-    Anim->OnChargeStartCheck.AddLambda([this]() -> void {
+    HunterAnim->OnChargeStartCheck.AddLambda([this]() -> void {
         if (bIsCharging)
             bCanQuitCharge = true;
         else
             HeavyAttackEnd();
         });
 
-    Anim->OnChargeEnd.AddLambda([this]() -> void {
+    HunterAnim->OnChargeEnd.AddLambda([this]() -> void {
         if (bIsCharging)
         {
             ChargeAttackEnd();
@@ -119,10 +168,10 @@ void AHunterCharacter::PostInitializeComponents()
             bChargeFinished = true;
         }
         });
-    Anim->OnFormAttack.AddLambda([this]() -> void {
+    HunterAnim->OnFormAttack.AddLambda([this]() -> void {
         bIsAttacking = true;
         });
-    Anim->OnAttackEnd.AddLambda([this]() -> void {
+    HunterAnim->OnAttackEnd.AddLambda([this]() -> void {
         bChargeFinished = false;
         });
 
@@ -149,13 +198,8 @@ void AHunterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void AHunterCharacter::Move(const FVector2D& Vector)
 {
-    bHasMovementInput = true;
-
     const FRotator Rotation = GetControlRotation();
     const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-    InputDirection = Vector;
-    InputDirection.Normalize();
 
     InputIntensity = Vector.Size();
     targetSpeed = 0.0f;
@@ -172,16 +216,13 @@ void AHunterCharacter::Move(const FVector2D& Vector)
     {
         ECurrentMovementState = EMovementState::Run;
     }
-
-    //State Pattern
     SetMovementState(ECurrentMovementState);
     CurrentMovementState->Move(this);
 
-    if (Anim->IsAnyMontagePlaying())
+    if (HunterAnim->IsAnyMontagePlaying())
     {
-        //추후 통합 중단 로직 추가
-        Anim->Montage_Stop(0.3f);
-        Anim->OnAttackEnd.Broadcast();
+        HunterAnim->Montage_Stop(0.3f);
+        HunterAnim->OnAttackEnd.Broadcast();
     }
 
     AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X), InputDirection.Y * targetSpeed);
@@ -201,8 +242,10 @@ void AHunterCharacter::MoveEnd()
     InputDirection = FVector2D::ZeroVector;
     bHasMovementInput = false;
 
-    if (!Anim->IsAnyMontagePlaying())
+    if (!HunterAnim->IsAnyMontagePlaying())
+    {
         ResetMovementState();
+    }
 }
 
 void AHunterCharacter::Look(const FVector2D& Vector)
@@ -231,29 +274,36 @@ void AHunterCharacter::StopSprinting()
 
 void AHunterCharacter::Dodge()
 {
-    if (!bHasMovementInput)
-    {
-        ECurrentMovementState = EMovementState::Backstep;
-        SetMovementState(ECurrentMovementState);
-        Anim->PlayBackstepMontage();
-    }
-    else if (bIsLockOn)
+    if (bIsLockOn)
     {
         ECurrentMovementState = EMovementState::Dodge;
         SetMovementState(ECurrentMovementState);
-        Anim->PlayLockOnDodgeMontage();
+        HunterAnim->PlayLockOnDodgeMontage();
     }
     else
     {
         //Roll 방향 개선
         ECurrentMovementState = EMovementState::Roll;
         SetMovementState(ECurrentMovementState);
-        Anim->PlayRollMontage();
+        //HunterAnim->PlayRollMontage();
+        RollMovement();
     }
 }
 
-void AHunterCharacter::StopDodging()
+void AHunterCharacter::Backstep()
 {
+    ECurrentMovementState = EMovementState::Backstep;
+    SetMovementState(ECurrentMovementState);
+    HunterAnim->PlayBackstepMontage();
+}
+
+void AHunterCharacter::RollMovement_Implementation()
+{
+}
+
+void AHunterCharacter::BackstepMovement_Implementation()
+{
+
 }
 
 void AHunterCharacter::ResetState()
@@ -275,6 +325,11 @@ bool AHunterCharacter::GetbHasMovementInput() const
     return bHasMovementInput;
 }
 
+void AHunterCharacter::SetbHasMovementInput(bool input)
+{
+    bHasMovementInput = input;
+}
+
 bool AHunterCharacter::GetbIsSprinting() const
 {
     return bIsSprinting;
@@ -292,16 +347,17 @@ float AHunterCharacter::GetDirectionAngle()
 
 void AHunterCharacter::SetDirectionAngle(FVector2D Vector)
 {
-    bHasMovementInput = true;
+    InputDirection = Vector;
+    InputDirection.Normalize();
 
-    auto DirectionVector = Vector;
-    DirectionVector.Normalize();
+    LastDirection = InputDirection;
 
     const FRotator Rotation = GetControlRotation();
     const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-    const FVector VelocityDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * DirectionVector.Y + 
-        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * DirectionVector.X;
+    const FVector VelocityDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * InputDirection.Y +
+        FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * InputDirection.X;
+
     const FVector ForwardDirection = GetActorForwardVector();
     const double Cos = ForwardDirection.Dot(VelocityDirection);
     const double Radian = FMath::Acos(Cos);
@@ -601,6 +657,7 @@ void AHunterCharacter::OnMontageStarted(UAnimMontage* Montage)
 
 void AHunterCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+
 }
 
 void AHunterCharacter::NoneState::Move(AHunterCharacter* Chr)
@@ -624,7 +681,6 @@ void AHunterCharacter::WalkState::Attack(AHunterCharacter* Chr)
     CommonAttack(Chr);
 }
 
-
 void AHunterCharacter::RunState::Move(AHunterCharacter* Chr)
 {
     Chr->targetSpeed = 0.42f;
@@ -634,7 +690,6 @@ void AHunterCharacter::RunState::Attack(AHunterCharacter* Chr)
 {
     CommonAttack(Chr);
 }
-
 
 void AHunterCharacter::SprintState::Move(AHunterCharacter* Chr)
 {
@@ -679,8 +734,6 @@ void AHunterCharacter::MovementState::CommonAttack(AHunterCharacter* Chr)
     case EActionType::HeavyAttack:
         if (Chr->GetbChargeFinished() && Form == EWeaponForm::Transformed)
         {
-            //ChargeEnd 이후에 끊기면 SetbChargeFinished가 계속 true가 되는 문제
-            //AttackEnd에서 초기화 / 회피 몽타주나 이동에서 AttackEnd.BroadCast
             Chr->SetbChargeFinished(false);
             Weapon->HeavyAfterCharge();
         }
@@ -688,10 +741,6 @@ void AHunterCharacter::MovementState::CommonAttack(AHunterCharacter* Chr)
             Weapon->HeavyStart(Form);
         break;
     case EActionType::FormChange:
-        // Common인 상황 외에 FormChange는 WeaponInstance에서 기존 함수 재사용
-        // 그런 방식은 bIsAttacking 갱신이 안 되는 문제
-        // 교체 공격 몽타주에 notify 추가
-        // 추후 개선 요망
         Weapon->FormChange(Form, Chr->GetbIsAttacking());
         break;
     }

@@ -8,6 +8,7 @@
 #include "Animation/AnimSequence.h"
 #include "BBWeapon.h"
 #include "WeaponInstance.h"
+#include "Animation/AnimInstanceProxy.h"
 
 UHunterAnimInstance::UHunterAnimInstance()
 {
@@ -15,16 +16,16 @@ UHunterAnimInstance::UHunterAnimInstance()
 
 void UHunterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
-	Super::NativeUpdateAnimation(DeltaSeconds);
+    Super::NativeUpdateAnimation(DeltaSeconds);
 
-	auto Pawn = TryGetPawnOwner();
-	if (!::IsValid(Pawn))
-		return;
+    auto Pawn = TryGetPawnOwner();
+    if (!::IsValid(Pawn))
+        return;
 
-	PCharacter = Cast<AHunterCharacter>(Pawn);
+    PCharacter = Cast<AHunterCharacter>(Pawn);
 
-	HasMovementInput = PCharacter->GetbHasMovementInput();
-	IsLockOn = PCharacter->GetIsLockOn();
+    HasMovementInput = PCharacter->GetbHasMovementInput();
+    IsLockOn = PCharacter->GetIsLockOn();
 
     MovementDirectionAngle = PCharacter->GetDirectionAngle();
     MovementState = PCharacter->GetMovementState();
@@ -62,9 +63,6 @@ void UHunterAnimInstance::PlayBackstepMontage()
 {
     Montage_Play(Backstep, 1.0f);
 }
-
-
-
 
 void UHunterAnimInstance::AnimNotify_CanInput()
 {

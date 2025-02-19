@@ -21,7 +21,6 @@ public:
     void PlayFormChange(EWeaponForm Form, bool bIsAttacking);
 
 private:
-
     UAnimSequence* SawCleaverRToT = nullptr;
     UAnimSequence* SawCleaverTToR = nullptr;
 };

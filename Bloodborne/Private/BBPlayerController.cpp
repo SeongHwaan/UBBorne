@@ -64,12 +64,18 @@ void ABBPlayerController::Move(const FInputActionValue& Value)
 {
     const FVector2D MovementVector = Value.Get<FVector2D>();
     if (MovementVector.Size() < BBCharacter->MinimumInput)
+    {
+        BBCharacter->SetbHasMovementInput(false);
         return;
+    }
+    else
+        BBCharacter->SetbHasMovementInput(true);
 
     BBCharacter->SetDirectionAngle(MovementVector);
 
     if (BBCharacter->GetbCanNextAction())
     {
+        BBCharacter->SetDesiredRotationFromInput(MovementVector);
         BBCharacter->Move(MovementVector);
     }
 }
@@ -109,12 +115,14 @@ void ABBPlayerController::LockOn()
 
 void ABBPlayerController::Dodge()
 {
-    BBCharacter->BindBufferedAction([this]() { BBCharacter->Dodge(); });
+    if(BBCharacter->GetbHasMovementInput())
+        BBCharacter->BindBufferedAction([this]() { BBCharacter->Dodge(); });
+    else
+        BBCharacter->BindBufferedAction([this]() { BBCharacter->Backstep(); });
 }
 
 void ABBPlayerController::DodgeEnd()
 {
-    BBCharacter->StopDodging();
 }
 
 void ABBPlayerController::StartSprint()
